@@ -1,0 +1,1 @@
+dists/quicklisp/software/cl-mysql-20160628-git/cl-mysql-test.asd

@@ -1,0 +1,1 @@
+dists/quicklisp/software/uffi-20150923-git/uffi-tests.asd

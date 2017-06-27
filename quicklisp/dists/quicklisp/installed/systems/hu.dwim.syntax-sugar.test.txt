@@ -1,0 +1,1 @@
+dists/quicklisp/software/hu.dwim.syntax-sugar-20161204-darcs/hu.dwim.syntax-sugar.test.asd

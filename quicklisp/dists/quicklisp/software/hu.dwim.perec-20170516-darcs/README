@@ -1,0 +1,11 @@
+http://dwim.hu/project/hu.dwim.perec
+
+Davit Lichteblau and Tomas Hlavaty have an extensive fork. Merging is
+considered, but not planned in the near future (as of 2017).
+
+http://src.knowledgetools.de/tomas/porting/
+
+to be merged:
+564c473bfc41e7bc19472eceaa317d283e050e0a
+903f1c33989f2955178595f4c3b47f2e782248bc
+8ef51dd78778c3c052ef63c2dcbfa4ee8dd25855

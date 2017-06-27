@@ -1,0 +1,471 @@
+# -*- mode: org; eval: (setf org-tags-column 80) -*-
+#+TAGS: { Attila(a) Levy(l) Tomi(t) Kami(k) Hlavaty(h) Unassigned(u) }
+#+TAGS: { critical(c) major(m) minor(n) }
+#+TAGS: { BUG(b) FEATURE(f) TASK(s) }
+#+STARTUP: hidestars
+#+STARTUP: overview
+
+* TODO [#C] add a slot to database to specify whether names must be wrapped in quotes or not :Kami:minor:FEATURE:
+
+Databases are usually case insensitive, but there might be an existing database which is not.
+
+Or, simply get rid of double quotes around literals if it works with Oracle.
+
+Transcript of #dwim.hu on 2010-04-06
+
+<kami`> oracle upcases everything, unless quoted with "  [17:10]
+<kami`> pg downcases everything unless quoted with "
+<kami`> there are lots of (string-downcase name) calls in the generic
+        implementation  [17:11]
+<kami`> I would have liked to not rely on case sensitivity.  [17:12]
+<kami`> But attila_lendvai correctly stated that for tables with reserved
+        names, it would only work with quotes.
+<kami`> I proposed to have a list of reserved words for each DB (which is
+        easily accessible on the net, as there are many others with the same
+        problem)  [17:14]
+<kami`> But that is too much magic for attila_lendvai 
+<levente_meszaros> what about the option on the database instance?  [17:15]
+<levente_meszaros> e.g. :downcase :upcase :quote :as-is 
+<attila_lendvai> or a lambda
+<attila_lendvai> presumably with a symbol denoting a defun
+
+[...]
+
+<levente_meszaros> here are the use cases  [19:04]
+<levente_meszaros> in one DB I'd like to have the simple syntax without quotes
+<levente_meszaros> it is easier to read, etc.  [19:05]
+<levente_meszaros> in another DB I _must_ use the quoted syntax because other
+                 tools are also using the DB and I must be able to work with
+                 them
+<kami`> OK. So, a slot of class database is it?  [19:06]
+<kami`>  and format-sql-identifier honours that slot
+<levente_meszaros> I think the same, yes  [19:07]
+<kami`> the slot can hold :downcase :upcase :quote :as-is, or a lambda
+<levente_meszaros> except I don't know how is this related to
+                 calculate-rdbms-name and rdbms-name-for
+<levente_meszaros> and what to do with other direction DB -> lisp
+<kami`> the other direction will work nicely with :as-is  [19:08]
+<levente_meszaros> IIRC we downcase now
+<levente_meszaros> as-is is ok, and we can put another slot for that if needed
+                                                                        [19:09]
+
+* TODO [#C] refactor calculate-rdbms-name and rdbms-name-for for flexible identifier formatting :Kami:minor:FEATURE:
+
+Transcript of #dwim.hu on 2010-04-06
+ 
+<levente_meszaros> what about calculate-rdbms-name and friends
+<kami`> I'll check them. I think they use string-downcase, currently
+<kami`> and can be refactored to use format-sql-identifier  [19:10]
+
+* TODO [#C] better document why calculate-rdbms-name is in rdbms and not in perec :Unassigned:minor:TASK:
+
+Transcript of #dwim.hu on 2010-04-06
+
+<levente_meszaros> what about calculate-rdbms-name and friends
+<kami`> I'll check them. I think they use string-downcase, currently
+<kami`> and can be refactored to use format-sql-identifier  [19:10]
+<levente_meszaros> oops, they are not even called from hu.dwim.rdbms
+<levente_meszaros> they are exclusively for perec
+<levente_meszaros> so much for modularity
+<kami`> attila_lendvai had a good point
+<kami`> the name stuff is very close to the restrictions of the db backend
+                                                                        [19:11]
+<levente_meszaros> putting a lambda there?
+<kami`> so, it is valid to have them in rdbms
+<kami`> but, with the changes which we laid out, ...
+<kami`> one might be able to move them out
+<kami`> into perec  [19:12]
+<levente_meszaros> ah, you mean as a reusable API
+<levente_meszaros> that's a valid point
+<levente_meszaros> but that just means that these functions are somewhat
+                 unrelated to that slot on the DB
+<kami`> e.g. if prepending a _ is not allowed in a certain db, then it is not
+        good to have that function in perec  [19:13]
+<kami`> that should be functionality which is better encapsulated in rdbms
+<levente_meszaros> e.g. #\- is not valid character in a name without quotes
+                                                                        [19:14]
+<levente_meszaros> agreed
+<kami`> But, until now, everybody was surprised to find this functionality in
+        rdbms and not in perec :)
+<kami`> So maybe one should document that better.  [19:15]
+
+* TODO [#C] update tests to reflect changes to EXPAND-SQL-AST
+
+The whole expand-sql-ast thing needs to settle a bit first.
+
+- HU.DWIM.RDBMS.TEST::TEST/BASIC/EXPAND-SQL-AST/BINDING
+- HU.DWIM.RDBMS.TEST::TEST/SYNTAX/EXPAND-SQL-AST/UNQUOTE/1
+- HU.DWIM.RDBMS.TEST::TEST/SYNTAX/EXPAND-SQL-AST/UNQUOTE/2
+- HU.DWIM.RDBMS.TEST::TEST/SYNTAX/EXPAND-SQL-AST/UNQUOTE/3
+
+* TODO [#C] fix TEST/TYPE/RATIO
+
+Not signalled:
+
+: (signals error (execute (sql (insert test_table (a) ((sql-unquote (sql-literal :value 1/3 :type (compile-sexp-sql-type '(float 64))) nil))))))
+
+#+begin_src text
+Test assertion failed:
+
+(HU.DWIM.STEFIL:SIGNALS ERROR
+  (HU.DWIM.RDBMS:EXECUTE
+   (HU.DWIM.RDBMS:SQL
+    (HU.DWIM.RDBMS.TEST::INSERT HU.DWIM.RDBMS.TEST::TEST_TABLE #
+     #)))) failed to signal condition ERROR
+   [Condition of type HU.DWIM.STEFIL::ASSERTION-FAILED]
+
+Restarts:
+ 0: [CONTINUE] Roger, go on testing...
+ 1: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 2: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 3: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 4: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 5: [CONTINUE] Skip the rest of the test HU.DWIM.RDBMS.TEST::TEST/TYPE/RATIO and continue by returning (values)
+#+end_src
+
+* TODO [#A] fix TEST/TYPE/TIMESTAMP-TZ                                          :Kami:major:BUG:
+
+#+begin_src text
+(HU.DWIM.RDBMS.ORACLE::TIMEZONE-AS-HHMM-STRING @2006-06-06T08:06:06.000000+02:00)
+
+Not yet implemented.
+   [Condition of type SIMPLE-ERROR]
+
+Restarts:
+ 0: [CONTINUE] Ignore and continue
+ 1: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 2: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 3: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 4: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 5: [CONTINUE] Skip the rest of the test HU.DWIM.RDBMS.TEST::TEST/TYPE/TIMESTAMP-TZ and continue by returning (values)
+
+The value "2006-06-06" is not of type LOCAL-TIME:TIMESTAMP.
+   [Condition of type TYPE-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/DATE/1 and continue by returning (values)
+
+The value "06:06:06.000000" is not of type LOCAL-TIME:TIMESTAMP.
+   [Condition of type TYPE-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/TIME/1 and continue by returning (values)
+
+Not yet implemented.
+   [Condition of type SIMPLE-ERROR]
+
+Restarts:
+ 0: [CONTINUE] Ignore and continue
+ 1: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 2: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 3: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 4: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 5: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/TIMESTAMP/1 and continue by returning (values)
+#+end_src
+
+* DONE [#A] fix HU.DWIM.RDBMS.TEST::TEST/TYPE/CLOB HU.DWIM.RDBMS.TEST::TEST/TYPE/BLOB :Hlavaty:major:BUG:
+  CLOSED: [2010-03-29 Mon 18:18]
+
+had to set indicator to -1 correctly and use empty lob for nil and :null cases
+
+Doesn't work for :null|nil
+
+#+begin_src text
+RDBMS error: ORA-01084: invalid argument in OCI call
+
+   [Condition of type HU.DWIM.RDBMS::SIMPLE-RDBMS-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.RDBMS.TEST::TEST/TYPE/CLOB and continue by returning (values)
+ 5: [RETEST] Rerun the test HU.DWIM.RDBMS.TEST::TEST/TYPE/CLOB
+#+end_src
+
+* DONE [#A] fix HU.DWIM.PEREC.TEST::TEST/QUERY/SELECT/WITH-LEXICAL-VARIABLES-1  :Hlavaty:major:BUG:
+  CLOSED: [2010-04-01 Thu 18:24]
+
+fixed, used old expand-sql-ast-into-lambda-form from perec (query ->
+ast; ast -> backend already known);
+expand-sql-ast-into-lambda-form-cached for rdbms sql macro
+
+#+begin_src text
+reader -> sexp -> ast -> lambda -> string
+
+          sexp -> ast                     (compile-sexp-sql + compile-sexp-*)
+                  ast -> lambda           (expand-sql-ast-into-lambda-form)
+                  ast -----------> string (format-sql|-to-string + format-sql-syntax-node)
+
+perec: %COMPILE-PLAN => expand-sql-ast-into-lambda-form
+
+rdbms: sql => compile-sexp-sql + expand-sql-ast-into-lambda-form
+
+---
+
+(def function make-class-id-matcher-where-clause (classes)
+  (bind ((oid-clause (sql-binary-operator :name "&"
+                                          :left (sql-identifier :name +oid-column-name+)
+                                          :right +oid-maximum-class-id+)))
+
+Value #<HU.DWIM.PEREC::LEXICAL-VARIABLE USER-NAME> can not be converted to an SQL literal.
+   [Condition of type SIMPLE-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/QUERY/SELECT/WITH-LEXICAL-VARIABLES-1 and continue by returning (values)
+ 5: [RETEST] Rerun the test HU.DWIM.PEREC.TEST::TEST/QUERY/SELECT/WITH-LEXICAL-VARIABLES-1
+
+The variable HU.DWIM.RDBMS::*COMMAND-ELEMENTS* is unbound.
+   [Condition of type UNBOUND-VARIABLE]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/QUERY/SELECT/WITH-LEXICAL-VARIABLES-2 and continue by returning (values)
+ 5: [RETEST] Rerun the test HU.DWIM.PEREC.TEST::TEST/QUERY/SELECT/WITH-LEXICAL-VARIABLES-2
+#+end_src
+
+* TODO [#C] sql operators
+
+#+begin_src text
+    pg                       meaning         oracle         status
+=====================================================================
+(def binary-operator ^)       exp(x,y)       **              done
+(def n-ary-operator \|\|)     
+(def unary-operator \|/)      sqrt(x)                        done
+(def unary-operator @)        abs(x)                         done
+
+;;; Bitwise operators
+
+(def binary-operator &)       logand        bitand(x,y)      done
+(def binary-operator \|)      logor         -
+(def binary-operator \#)      logxor        -
+(def unary-operator ~)        lognot        -
+(def binary-operator |<<|)    logshl        -
+(def binary-operator |>>|)    logshr        -
+#+end_src
+
+* TODO [#A] fix nowait HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/LOCK-CLASS/2
+
+#+begin_src text
+ RDBMS error: ORA-00054: resource busy and acquire with NOWAIT specified
+
+   [Condition of type HU.DWIM.RDBMS::SIMPLE-RDBMS-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 5: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 6: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 7: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 8: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/LOCK-CLASS/2 and continue by returning (values)
+#+end_src
+
+* TODO [#C] fix HU.DWIM.PEREC.TEST::TEST/QUERY/EMBEDDED-SQL/SELECT-FORM
+
+non-portable injecting sql as string
+
+probably not needed for perec
+
+NEEDED for dwim.hu apps
+
+subselect, max
+
+: SELECT "o"."string_attr", (select max(_int_attr) from _embedded_sql_test) FROM "embedded_sql_test_ap" "o" ORDER BY "o"."int_attr" ASC
+
+#+begin_src text
+RDBMS error: ORA-00911: invalid character
+
+   [Condition of type HU.DWIM.RDBMS::SIMPLE-RDBMS-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/QUERY/EMBEDDED-SQL/SELECT-FORM and continue by returning (values)
+
+pg: "SELECT \"o\".\"int_attr\" FROM \"embedded_sql_test_ap\" \"o\" ORDER BY _o._int\_attr DESC
+#+end_src
+
+* TODO [#A] fix "where case" HU.DWIM.PEREC.TEST::TEST/QUERY/TYPE/T/2
+
+how to do "where case" in oracle?
+
+: pg => SELECT "_o"."_t_2" FROM "_query_type_test_ap" "_o" WHERE ((CASE WHEN (("_o"."_t_2" IS NULL)) THEN NULL ELSE ("_o"."_t_2"=:1) END))
+
+#+begin_src text
+RDBMS error: ORA-00907: missing right parenthesis
+
+   [Condition of type HU.DWIM.RDBMS::SIMPLE-RDBMS-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/QUERY/TYPE/T/2 and continue by returning (values)
+#+end_src
+
+* DONE [#A] fix ORA-01459: invalid length for variable character string         :Hlavaty:major:BUG:
+  CLOSED: [2010-04-01 Thu 12:22]
+
+fixed by HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/TEXT/3 bellow
+
+maybe something about "" (length 0) being NULL in oracle?
+
+#+begin_src text
+RDBMS error: ORA-01459: invalid length for variable character string
+
+   [Condition of type HU.DWIM.RDBMS::SIMPLE-RDBMS-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/STRING/1 and continue by returning (values)
+#+end_src
+
+* TODO [#A] fix ORA-02260: table can have only one primary key
+
+HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/ASSOCIATION/M-N/CLASS
+
+works with empty db, tries to alter table when already there
+
+* TODO [#A] fix ORA-24345: A Truncation or null fetch error occurred
+
+#+begin_src text
+   [Condition of type HU.DWIM.RDBMS::SIMPLE-RDBMS-ERROR]
+
+Restarts:
+ 0: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 1: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 2: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 3: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 4: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/STRING/2 and continue by returning (values)
+#+end_src
+
+* TODO [#C] fix HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/INTEGER/4
+
+ora 38 digits
+pg  1000 digits
+
+#+begin_src text
+148129 340282366920938463463374607431768211456
+       340282366920938463463374607431768211400
+
+INSERT INTO "_type_test" ("_oid", "_integer_4") VALUES (148129, 340282366920938463463374607431768211456)
+
+select * from "_type_test"
+
+SELECT "_integer_4" FROM "_type_test" WHERE ("_oid" = 148129)
+
+340282366920938463463374607431768211400
+
+-- precision 1 to 38
+(length "340282366920938463463374607431768211456")
+(length "340282366920938463463374607431768211400")
+#+end_src
+
+* DONE [#A] fix HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/BOOLEAN/2             :Hlavaty:major:BUG:
+  CLOSED: [2010-03-31 Wed 11:17]
+
+fix: "FALSE" also #f
+
+HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/NUMBER/2
+
+#+begin_src text
+Test assertion failed:
+
+Expression (OBJECT-EQUAL-P TEST-VALUE (SLOT-VALUE OBJECT NAME)) evaluated to false.
+   [Condition of type HU.DWIM.STEFIL::ASSERTION-FAILED]
+
+Restarts:
+ 0: [CONTINUE] Roger, go on testing...
+ 1: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 2: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 3: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 4: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 5: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/BOOLEAN/2 and continue by returning (values)
+#+end_src
+
+* DONE [#A] fix HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/TEXT/3                :Hlavaty:major:BUG:
+  CLOSED: [2010-04-01 Thu 12:24]
+
+oracle-string and oracle-text implemented
+
+#+begin_src text
+Test assertion failed:
+
+Binary predicate (= X Y) failed.
+x: 0 => 0
+y: (HU.DWIM.PEREC.TEST::TYPE-TEST/SELECT-OBJECT
+    HU.DWIM.PEREC.TEST::NAME) => 1
+   [Condition of type HU.DWIM.STEFIL::ASSERTION-FAILED]
+
+Restarts:
+ 0: [CONTINUE] Roger, go on testing...
+ 1: [TERMINATE-TRANSACTION] return (values) from the WITH-TRANSACTION block executing the current terminal action :COMMIT
+ 2: [COMMIT-TRANSACTION] mark transaction for commit only and return (values) from the WITH-TRANSACTION block
+ 3: [ROLLBACK-TRANSACTION] mark transaction for rollback only and return (values) from the WITH-TRANSACTION block
+ 4: [RESTART-TRANSACTION] rollback the transaction by unwinding the stack and restart the WITH-TRANSACTION block in a new database transaction
+ 5: [CONTINUE] Skip the rest of the test HU.DWIM.PEREC.TEST::TEST/PERSISTENCE/TYPE/TEXT/3 and continue by returning (values)
+#+end_src
+
+* TODO [#C] implement sqlite database-list-table-columns based on pragma table_info :Unassigned:minor:FEATURE:
+
+[[file:source/sqlite/ddl.lisp][sqlite function database-list-table-columns]]
+
+* TODO [#C] document prerequisites for running the test suite for each backend  :Unassigned:minor:TASK:
+
+including the cffi library lookup etc.
+* TODO [#C] document boolean <-> char(1) Y/N mapping for oracle                 :Unassigned:minor:TASK:
+* TODO [#C] create macro for db-specific sql in tests                           :Kami:minor:TASK:
+
+Transcript of #dwim.hu on 2010-04-06
+
+<kami`> Tests are another problem
+<kami`> They contain tons of verbatim sql which is not portable to databases
+        with :quote and :upcase  [19:17]
+<levente_meszaros> ah, yes, but it's ok if the tests are only run with a
+                 specific DB setting  [19:18]
+<levente_meszaros> we can't test all combinations of all parameters, that
+                 would run till the end of the universe
+<kami`> even then, some things are really not portable
+<levente_meszaros> if something is not portable, we should make the test so
+                 that it expects that failure
+<kami`> oracle uses 'create global temporary table' where every other DB and
+        the standard uses 'create temporary table'  [19:19]
+<kami`> you mean sth like (if (typep *database* ... ?
+<levente_meszaros> we already have DB specific tests
+<levente_meszaros> yes  [19:20]
+<kami`> lemme check
+<levente_meszaros> see sexp-sql-dialect-test
+<levente_meszaros> or rather dialect-test  [19:21]
+<kami`> So, I'll write a macro execute-db-specific-sql  [19:24]
+<kami`> (execute-db-specific-sql
+<kami`>   (oracle "....")  [19:25]
+<kami`> (sqlite "....")
+<kami`> (t "...."))
+<kami`> along the same lines
+<levente_meszaros> that would be ok in the tests  [19:31]
+

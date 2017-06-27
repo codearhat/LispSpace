@@ -1,0 +1,7 @@
+tesc-test-fns.lib
+c-test-fns.dll
+c-test-fns.dylib
+z.dylib
+.bin
+uffi-c-test.so
+uffi-c-test.dylib

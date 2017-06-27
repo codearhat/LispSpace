@@ -1,0 +1,1 @@
+dists/quicklisp/software/myway-20150302-git/myway.asd

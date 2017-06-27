@@ -1,0 +1,13 @@
+# FASLs
+*.fas
+*.fasl
+*.ofasl
+*.64ofasl
+*.nfasl
+*.xfasl
+*.dx32fsl
+*.dx64fsl
+*.abcl
+*.sse2f
+# Backup files
+*~

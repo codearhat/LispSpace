@@ -1,0 +1,1 @@
+dists/quicklisp/software/hu.dwim.asdf-20170516-darcs/hu.dwim.asdf.asd

@@ -1,0 +1,184 @@
+#!/usr/bin/make -f
+
+plain-pkg	:= clsql
+
+pkg		:= cl-sql
+pkg-uffi	:= cl-sql-uffi
+pkg-mysql	:= cl-sql-mysql
+pkg-pg		:= cl-sql-postgresql
+pkg-pg-socket	:= cl-sql-postgresql-socket
+pkg-aodbc	:= cl-sql-aodbc
+pkg-odbc	:= cl-sql-odbc
+pkg-sqlite	:= cl-sql-sqlite
+pkg-sqlite3	:= cl-sql-sqlite3
+pkg-oracle	:= cl-sql-oracle
+pkg-tests	:= cl-sql-tests
+all-pkgs	:= $(pkg) $(pkg-uffi) $(pkg-mysql) $(pkg-pg) $(pkg-pg-socket) $(pkg-aodbc) $(pkg-odbc) $(pkg-sqlite) $(pkg-sqlite3) $(pkg-tests)
+
+
+UPSTREAM_VER	:= $(shell sed -n -e "s/${pkg} (\(.*\)-[0-9A-Za-z\.]).*/\1/p" < debian/changelog |head -1)
+
+## Lisp sources
+srcs-sql	:= $(wildcard sql/*.lisp)
+srcs-uffi	:= $(wildcard uffi/*.lisp) $(wildcard uffi/*.c)
+srcs-uffi-so	= $(wildcard uffi/*.so)
+srcs-mysql	:= $(wildcard db-mysql/*.lisp) $(wildcard db-mysql/*.c)
+srcs-mysql-so	=  $(wildcard db-mysql/*.so)
+srcs-pg		:= $(wildcard db-postgresql/*.lisp)
+srcs-pg-socket	:= $(wildcard db-postgresql-socket/*.lisp)
+srcs-aodbc	:= $(wildcard db-aodbc/*.lisp)
+srcs-odbc	:= $(wildcard db-odbc/*.lisp)
+srcs-sqlite	:= $(wildcard db-sqlite/*.lisp)
+srcs-sqlite3	:= $(wildcard db-sqlite3/*.lisp)
+srcs-oracle	:= $(wildcard db-oracle/*.lisp)
+srcs-tests	:= $(wildcard tests/*.lisp)
+
+clc-base	:= usr/share/common-lisp
+clc-source	:= $(clc-base)/source
+clc-systems	:= $(clc-base)/systems
+doc-dir		:= usr/share/doc/cl-sql
+
+clc-clsql	:= $(clc-source)/$(plain-pkg)
+
+clc-sql		:= $(clc-source)/clsql
+lispdir-sql	:= $(clc-sql)/sql
+clc-uffi	:= $(clc-source)/clsql-uffi
+lispdir-uffi 	:= $(clc-uffi)/uffi
+sodir-uffi 	:= usr/lib/clsql
+clc-mysql	:= $(clc-source)/clsql-mysql
+lispdir-mysql	:= $(clc-mysql)/db-mysql
+sodir-mysql	:= usr/lib/clsql
+clc-pg		:= $(clc-source)/clsql-postgresql
+lispdir-pg	:= $(clc-pg)/db-postgresql
+clc-pg-socket 	:= $(clc-source)/clsql-postgresql-socket
+lispdir-pg-socket := $(clc-pg-socket)/db-postgresql-socket
+clc-aodbc	:= $(clc-source)/clsql-aodbc
+lispdir-aodbc	:= $(clc-aodbc)/db-aodbc
+clc-odbc	:= $(clc-source)/clsql-odbc
+lispdir-odbc	:= $(clc-odbc)/db-odbc
+clc-sqlite	:= $(clc-source)/clsql-sqlite
+lispdir-sqlite	:= $(clc-sqlite)/db-sqlite
+clc-sqlite3	:= $(clc-source)/clsql-sqlite3
+lispdir-sqlite3	:= $(clc-sqlite3)/db-sqlite3
+clc-oracle	:= $(clc-source)/clsql-oracle
+lispdir-oracle	:= $(clc-oracle)/db-oracle
+clc-tests	:= $(clc-source)/clsql-tests
+lispdir-tests	:= $(clc-tests)/tests
+
+
+build-arch: build-arch-stamp
+build-arch-stamp:
+	dh_testdir
+	$(MAKE)
+	touch build-arch-stamp
+
+build-indep:
+
+build: build-arch
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-arch-stamp
+	[ ! -f Makefile ] || $(MAKE) distclean
+	find . -type f -and -name \*~ -or -name .\*~ -exec rm -f {} \;
+	rm -rf doc/html
+	dh_clean
+
+install: DH_OPTIONS= install-indep install-arch
+
+install-indep: 
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	dh_installdirs --all $(clc-source)
+	dh_installdirs -p $(pkg) $(lispdir-sql) etc
+	dh_installdirs -p $(pkg-pg) $(lispdir-pg)
+	dh_installdirs -p $(pkg-pg-socket) $(lispdir-pg-socket)
+	dh_installdirs -p $(pkg-aodbc) $(lispdir-aodbc)
+	dh_installdirs -p $(pkg-odbc) $(lispdir-odbc)
+	dh_installdirs -p $(pkg-sqlite) $(lispdir-sqlite)
+	dh_installdirs -p $(pkg-sqlite3) $(lispdir-sqlite3)
+	dh_installdirs -p $(pkg-oracle) $(lispdir-oracle)
+	dh_installdirs -p $(pkg-tests) $(lispdir-tests)
+
+	# Main package
+	dh_install -p $(pkg) $(srcs-sql) $(lispdir-sql)
+	dh_install -p $(pkg) clsql.asd $(clc-clsql)
+	dh_install -p $(pkg) debian/clsql-init.lisp etc
+
+	dh_install -p $(pkg-pg) $(srcs-pg) $(lispdir-pg)
+	dh_install -p $(pkg-pg) clsql-postgresql.asd $(clc-pg)
+	dh_install -p $(pkg-pg-socket) $(srcs-pg-socket) $(lispdir-pg-socket)
+	dh_install -p $(pkg-pg-socket) clsql-postgresql-socket.asd $(clc-pg-socket)
+	dh_install -p $(pkg-aodbc) $(srcs-aodbc) $(lispdir-aodbc)
+	dh_install -p $(pkg-aodbc) clsql-aodbc.asd $(clc-aodbc)
+	dh_install -p $(pkg-odbc) $(srcs-odbc) $(lispdir-odbc)
+	dh_install -p $(pkg-odbc) clsql-odbc.asd $(clc-odbc)
+	dh_install -p $(pkg-sqlite) $(srcs-sqlite) $(lispdir-sqlite)
+	dh_install -p $(pkg-sqlite) clsql-sqlite.asd $(clc-sqlite)
+	dh_install -p $(pkg-sqlite3) $(srcs-sqlite3) $(lispdir-sqlite3)
+	dh_install -p $(pkg-sqlite3) clsql-sqlite3.asd $(clc-sqlite3)
+	dh_install -p $(pkg-oracle) $(srcs-oracle) $(lispdir-oracle)
+	dh_install -p $(pkg-oracle) clsql-oracle.asd $(clc-oracle)
+
+	dh_install -p $(pkg-tests) $(srcs-tests) $(lispdir-tests)
+	dh_install -p $(pkg-tests) clsql-tests.asd $(clc-tests)
+
+	# Documentation
+	rm -rf doc/html
+	(cd doc; tar xzf html.tar.gz; cd ..)
+
+install-arch: 
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+
+	dh_installdirs -p $(pkg-uffi) $(lispdir-uffi) $(sodir-uffi)
+	dh_installdirs -p $(pkg-mysql) $(lispdir-mysql) $(sodir-mysql)
+
+	# UFFI
+	dh_install -p $(pkg-uffi) $(srcs-uffi) $(lispdir-uffi)
+	dh_install -p $(pkg-uffi) $(srcs-uffi-so) $(sodir-uffi)
+	dh_install -p $(pkg-uffi) clsql-uffi.asd $(clc-uffi)
+
+	# Backends
+	dh_install -p $(pkg-mysql) $(srcs-mysql) $(lispdir-mysql)
+	dh_install -p $(pkg-mysql) clsql-mysql.asd $(clc-mysql)
+	dh_install -p $(pkg-mysql) $(srcs-mysql-so) $(sodir-mysql)
+
+binary-indep: install-indep
+	dh_testdir -i
+	dh_testroot -i
+	dh_installdocs -i -p $(pkg) doc/html doc/clsql.pdf
+	dh_installexamples -i -p $(pkg) examples/*
+	dh_installchangelogs -i
+	dh_lisp -i
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+binary-arch: install-arch
+	dh_testdir -a
+	dh_testroot -a
+	dh_installdocs -a
+	dh_installchangelogs -a
+	dh_lisp -a
+	dh_strip -a
+	dh_compress -a
+	dh_fixperms -a
+	dh_installdeb -a
+	dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+binary: binary-indep binary-arch
+
+
+.PHONY: build clean binary-indep binary-arch binary install

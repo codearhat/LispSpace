@@ -1,0 +1,4078 @@
+head	1.8;
+access;
+symbols;
+locks
+	binghe:1.8; strict;
+comment	@% @;
+
+
+1.8
+date	2009.06.19.06.33.11;	author binghe;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2009.02.12.11.36.58;	author binghe;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2009.02.10.11.51.19;	author binghe;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2009.02.04.15.24.42;	author binghe;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2008.12.07.02.49.20;	author binghe;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2008.12.07.02.45.25;	author binghe;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2008.12.07.02.33.43;	author binghe;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2008.12.07.01.06.48;	author binghe;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.8
+log
+@Add correct proceedings info
+@
+text
+@%!TEX encoding = UTF-8 Unicode
+% $Id: snmp.tex,v 1.7 2009/02/12 11:36:58 binghe Exp binghe $
+
+% SNMP for Common Lisp
+% ILC 2009 Paper by Chun Tian (binghe)
+
+%%% Comments:
+
+% Nice to see a detailed application of Lisp to networking/services.  A
+% bit heavy on the operational detail - would have been good to see more
+% on the design side (constraints, choices, rationales) - but otherwise
+% a useful contribution.
+
+% ---
+
+% This project covers some very important issues for the future of
+% Common Lisp, but unfortunately the paper is rather badly written.  There
+% are good aspects of the presentation, but so many bad ones that the
+% author should seek out the help of a Lisp-literate person who has never
+% heard of ASN.1, MIB, and may other terms (which he uses for several pages
+% before providing even an informal definition, or providing enough context
+% for a more Net-naive reader to grasp the essence.
+
+% I strongly suggest a second review after the author has had time to grok
+% the enormity of the disconnect of his presentation style with the ability
+% to hold the attention of an audience  that is not a SNMP geek.
+
+% ---
+
+% very dense about a particular topic, Simple Network Management
+% Protocol, with more detail than I care to read.  But it seems well
+% written, and evidently there's a big user community, so it a paper
+% with narrow appeal is appropriate
+
+% Typos and grammatical errors abound (several to a dozen per page.)  e.g. :
+
+% Page 1.,
+% First, rewrite the two paragraphs beginning "As a Linux System
+% administrator ..." and "About two years later .." but remove all first-
+
+% person references and viewpoints (i.e., the pronoun "I")  There is a good
+% problem to be stated here, and the author is allowed to offer a solution;
+% but it should not be merely  an informal, first-person story.
+% * 	The sentence beginning "It's a pure lisp implementation ..." should
+%   rewritten the remainder to be more like this "... but is not being
+%   maintained, and doesn't support the new protocol SNMPv3."
+% * 	".. SYSMAN under active developments"  ->  " ... SYSMAN was under
+%   active development."
+% * 	"... SNMP package supports the following Common LIsp ..."  ->
+%   "... SNMP package runs on the following Common LIsp ..."
+% Page 3, footnote "The actually ...) -> "The actual ..."
+% . . .
+
+% Other help with English diction may be necessary.
+
+%\documentclass[preprint,nocopyrightspace,natbib,9pt]{sigplanconf}
+\documentclass[reprint,natbib,9pt]{sigplanconf}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\conferenceinfo{ILC'09}{March 22--25, 2009, Cambridge, Massachusetts, USA}
+\copyrightyear{2009}
+\copyrightdata{}
+\proceedings{Proceedings of the International Lisp Conference}
+
+\toappear{}
+
+% These are ignored unless 'preprint' option specified.
+\titlebanner{DRAFT---Do not distribute}
+\preprintfooter{Chun Tian (binghe)'s paper for ILC 2009}
+
+\title{SNMP for Common Lisp}
+
+\authorinfo{Chun Tian (binghe)}
+           {Hangzhou Research Center, P. R. China\\NetEase.com, Inc.}
+           {binghe.lisp@@gmail.com}
+
+\maketitle
+
+\begin{abstract}
+  Simple Network Management Protocol (SNMP) is widely used for management of
+  Internet-based network today. In Lisp community, there're large Lisp-based
+  applications which may need be monitored, and there're Lispers who may need
+  to monitor other remote systems which are either Lisp-based or not.
+  However, the relationship between Lisp and SNMP haven't been studied enough
+  during past 20 years.
+  
+  The
+  \textsc{cl-net-snmp}\footnote{\texttt{http://common-lisp.net/project/cl-net-snmp}}
+  project has developed a new Common Lisp package which implemented the
+  SNMP protocol. On client side, it can be used to query remote SNMP peers,
+  and on server side, it brings SNMP capability into Common Lisp based applications,
+  which could be monitored from remote through any SNMP-based management system.
+  It's also a flexible platform for researches on network management and SNMP itself.
+  But the most important, this project tries to prove: \textbf{Common Lisp is the most
+  fit language to implement SNMP}.
+
+  Different from other exist SNMP projects on Common Lisp,
+  \textsc{cl-net-snmp} is clearly targeted on full SNMP
+  protocol support include \textsl{SNMPv3} and server-side work (agent). During
+  the development, an general ASN.1 compiler and runtime package and
+  an portable UDP networking
+  package are also implemented, which would be useful for other related
+  projects.
+
+  In this paper, the author first introduces the SNMP protocol and
+  a quick tutorial of \textsc{cl-net-snmp}
+  on both client and server sides, and then the Lisp native design
+  and the implementation details of the ASN.1 and SNMP package,
+  especially the ``code generation'' approach on compiling SNMP MIB
+  definitions from ASN.1 into Common Lisp.
+\end{abstract}
+
+\category{C.2.2}{Computer-Communication Networks}{Network Protocols}[Applications]
+\category{C.2.3}{Computer-Communication Networks}{Network Operations}[Network monitoring]
+\category{C.2.6}{Computer-Communication Networks}{Internetworking}[Standards]
+\category{D.3.4}{Programming Languages}{Processors}[Code generation]
+
+\terms
+Languages, Network Management
+
+\keywords
+Lisp, SNMP, ASN.1
+
+\section{SNMP Overview}
+
+Simple Network Management Protocol (SNMP) is the \textit{de facto}
+standard for network management and service monitoring. Using SNMP,
+people can monitor the status of remote UNIX servers and network
+equipment.
+
+Though there're other protocols defined before and after
+SNMP, it has several advantages which lead it become popular. First,
+from the view of implementation costs, SNMP is the most lightweight and
+can be easily implemented by hardware. Second, it's really simple to
+do the actual management job: all information are defined as variables
+which are either scalars or conceptually organized into tables. All of
+these variables are formally defined by using a definition language
+called the Structure of Management Information (SMI) \cite{RFC:2578},
+which is a subset
+of Abstract Syntax Notation One (ASN.1) \cite{ISO:ASN.1}.
+Data definitions written
+in the SMI are called Management Information Base (MIB) \cite{RFC:3418}.
+Third, SNMP has minimum resource requirements.
+By using User Datagram Protocol (UDP) \cite{RFC:768},
+most SNMP operations only need one pair of UDP packets: a request and
+a response.
+
+SNMP has three major versions: \textsl{SNMPv1} \cite{RFC:1157},
+\textsl{SNMPv2c} \cite{RFC:1901} and
+\textsl{SNMPv3} \cite{RFC:3411}. The differences between \textsl{SNMPv1} and
+\textsl{SNMPv2c} is mainly on SMI and MIB side, no packet format changes.
+The \textsl{SNMPv3} is a big step towards security: it supports authentication
+and encryption based on standard algorithms, and the packet format
+changed a lot.
+
+The relationship between SNMP and ASN.1 is very important because
+any implementation of SNMP must first implement ASN.1, at least a subset of it.
+As we already mentioned above, the MIB are defined by a subset of ASN.1,
+the SMI. Actually, the SNMP message format are just defined through
+ASN.1: The whole SNMP message is type of ASN.1 \texttt{SEQUENCE}, and
+all SNMP protocol data units (PDU) are defined in framework of ASN.1 type
+system. ASN.1 data is just abstract objects, it need to be translated
+into octet bytes and then back. This translation is generally called encoding and
+decoding.
+The encoding/decoding method chosen by SNMP is the
+Basic Encoding Rule (BER) \cite{ISO:BER},
+which use a Type-Length-Value (TLV) combination in representation of any
+ASN.1 data as octet bytes in networking packets.
+
+There're many SNMP-related open source and commercial software in the
+world. On \textsl{SourceForge.net}, there're almost 300 projects
+matching the keyword ``SNMP'', which can be classified into three
+types:
+\begin{itemize}
+\item SNMP library or extension for specific programming language.
+\item SNMP agent which acts as a standalone agent or agent extension.
+\item SNMP manager which is used for managing SNMP-enabled servers or
+  equipment, either GUI or Web-based.
+\end{itemize}
+
+From the view of programming languages, almost every in-use language
+has a well implemented SNMP library/package. For popular languages
+like Java, Python or C\#, there're often several similar projects
+existing in competition. And there's at least one language, Erlang,
+which ships full SNMP support (more than 60,000 lines of code) with
+the language itself \footnote{\texttt{http://erlang.org/}}.
+J. Schonwalder wrote a good summary \cite{Schonwalder2002}
+which mentioned various open source SNMP library/tools for different languages.
+
+On the other side, the relationship between Common Lisp and ASN.1/SNMP
+haven't been studied enough before. There're some similarities between
+ASN.1 and Common Lisp. First, the most important ASN.1 aggregate
+type \texttt{SEQUENCE} can be directly mapped to Common Lisp lists,
+the both are generalized lists which could contain any object. Second,
+ASN.1 lexical tokens like multi-line strings, comments, and the number
+representation are almost the same as those in Common Lisp. Later will show,
+by making some necessary changes to CL readtables, the Lisp reader
+could directly read ASN.1 definitions into Lisp tokens. For SNMP itself,
+there're also some connection between its design and Lisp, especially the
+design of ``GetNextRequestPDU'' \cite{RFC:3416},
+it's just like the Common Lisp function
+\texttt{cdr} and later will show that the implementation of this PDU has
+almost just used the function \texttt{cdr}.
+
+For Common Lisp, before 2007, two SNMP projects have been in
+existence. Simon Leinen's
+\textsc{sysman}\footnote{\texttt{http://www.switch.ch/misc/leinen/snmp/sysman.html}}
+is the first Lisp-SNMP solution which supports client side
+\textsl{SNMPv1}/\textsl{SNMPv2c} and server side agent on
+Symbolics Lisp Machine. It's a pure lisp implementation, but
+is not being maintained anymore, and doesn't support the new protocol \textsl{SNMPv3}.
+During 2006, Larry Valkama wrote two SNMP client packages
+\footnote{\texttt{http://www.valkama.se/article/lisp/snmp}},
+both of which are not pure lisp:
+one is a FFI wrapper to Net-SNMP library, and the other works
+by capturing outputs of Net-SNMP's common-line utilities.
+
+Unfortunately neither of above projects had showed the advantages of using
+Common Lisp to implement SNMP. There're two ways to implement the SNMP protocol:
+with and without MIB support, one is hard and the other is simple. The simple
+way to implement SNMP is just use number lists as ASN.1 \texttt{OBJECT IDENTIFIER} (OID)
+such as ``1.3.6.1.4.1.1.1.0'', and doesn't care their additional type information
+beside ASN.1 itself, the
+\textsc{snmp1}\footnote{\texttt{http://common-lisp.net/projects/snmp1}} is
+a example, it just implement the BER encoding and SNMP packets
+generation, no matter what the OID numbers mean.
+
+The ``hard'' way to implement SNMP, the relation between OID number lists
+and their names must be kept, and these information should be retrieve from the
+original MIB definitions. To achieve this, an ASN.1 syntax parser would be needed,
+and the structure of a MIB storage system should be designed well.
+
+The \textsc{cl-net-snmp} project solved all above issues well and went
+``a hardest way'' to implement SNMP. 1) It have an ASN.1 to Common Lisp
+compiler which compiles MIB definitions into Common Lisp source code which
+then defines almost all information used by SNMP package. 2) The CLOS-based BER
+encoding/decoding system in ASN.1 package is extensible: user can define their
+own new ASN.1 types, and all SNMP PDUs are defined in this way. 3) The SNMP
+package support full MIB, that means all information defined in
+MIB are being used when doing SNMP work. 4) Object-orient SNMP query facility.
+\textsc{cl-net-snmp} runs on the following Common Lisp
+implementations: CMUCL, SBCL, Clozure CL, LispWorks, Allegro CL and
+Scieneer CL; and runs under Linux, Solaris, Mac OS X and Windows.
+
+Following sections will first introduce the SNMP package from user view
+and then show the design idea and implementation details behind
+the express and convenient API.
+
+\section{\textsc{cl-net-snmp} Tutorial}
+
+\subsection{Client-side SNMP}
+
+The client-side API of SNMP package is quite straight-forward. The
+central object which operated by almost all client functions is the
+``SNMP session''. To query a remote SNMP peer, a session object should
+be created first.
+
+As SNMP protocol has three versions (\textsl{SNMPv1}, \textsl{SNMPv2c}
+and \textsl{SNMPv3}), correspondingly, we have three session classes:
+\texttt{v1-session}, \texttt{v2c-session} and \texttt{v3-session}. The
+entry API of client-side SNMP is the function
+\texttt{snmp:open-session}, which creates a new SNMP session:
+%
+\begin{verbatim}
+snmp:open-session (host &key port version community
+                             user auth priv)
+\end{verbatim}
+
+\subsubsection{SNMPv1 and SNMPv2c}
+
+To create a \texttt{SNMPv1} or \texttt{SNMPv2c} session, only keywords \texttt{port},
+\texttt{version} and \texttt{community} are needed. Suppose we have a
+SNMP server whose host name is \texttt{"binghe-debian.local"},
+which is running a Net-SNMP agent on default port 161, its SNMP
+community is \texttt{"public"}, and the SNMP protocol is
+\textsl{SNMPv2c}, then the following form will create a new session
+and assign it to a variable \texttt{s1}:
+%
+\begin{verbatim}
+> (setf s1 (snmp:open-session "binghe-debian.local"
+                              :port 161
+                              :version :v2c
+                              :community "public"))
+#<SNMP::V2C-SESSION 223CF317>
+\end{verbatim}
+
+In current version of SNMP package, when a session is being created, a
+new socket will be opened at the same time. You can use
+\texttt{snmp:close-session} to close the session:
+%
+\begin{verbatim}
+snmp:close-session (session)
+\end{verbatim}
+
+All SNMP PDUs \cite{RFC:3416} are supported. When a session is opened, functions which
+can be used on it are listed below:
+
+\begin{itemize}
+\item \texttt{snmp:snmp-get}
+\item \texttt{snmp:snmp-get-next}
+\item \texttt{snmp:snmp-walk}\footnote{\texttt{snmp:snmp-walk} is a compound operation,
+it may calls \texttt{snmp:snmp-get} and \texttt{snmp:snmp-get-next} to do
+the actual work.}
+\item \texttt{snmp:snmp-set}
+\item \texttt{snmp:snmp-trap}\footnote{\texttt{snmp:snmp-trap} only defined in \textsl{SNMPv1}}
+\item \texttt{snmp:snmp-inform}
+\item \texttt{snmp:snmp-bulk}
+\end{itemize}
+
+For normal lisp applications, \texttt{snmp:snmp-get} is the most
+useful function. Users can retrieve multiple variables in one query as
+the SNMP protocol supported:
+%
+\begin{verbatim}
+> (snmp:snmp-get s1 '("sysDescr.0" "sysName.0"))
+("Linux binghe-debian.local 2.6.26-1-amd64 #1
+  SMP Thu Oct 9 14:16:53 UTC 2008 x86_64"
+ "binghe-debian.local")
+\end{verbatim}
+%
+While only one variable is queried, \texttt{snmp:snmp-get} can be used
+just like this:
+%
+\begin{verbatim}
+> (snmp:snmp-get s1 "sysName.0")
+"binghe-debian.local"
+\end{verbatim}
+
+The string \texttt{"sysDescr.0"} here will be translated to a
+ASN.1 OID instance. When the SNMP client operated on
+multiple servers, preparing all OID instances before the actual query work
+would increase the performance. The function \texttt{asn.1:oid} is used for
+this translation:
+%
+\begin{verbatim}
+> (asn.1:oid "sysName.0")
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysName.0>
+> (snmp:snmp-get s1 *)
+"binghe-debian.local"
+\end{verbatim}
+
+The \texttt{snmp:with-open-session} macro can be used to establish a
+temporary session:
+\begin{verbatim}
+with-open-session ((session &rest args) &body body)
+\end{verbatim}
+Following is a sample query:
+\begin{verbatim}
+> (snmp:with-open-session (s "binghe-debian.local"
+                             :port 161
+                             :version :v2c
+                             :community "public")
+    (snmp:snmp-get s '("sysName.0")))
+("binghe-debian.local")
+\end{verbatim}
+Actually, the SNMP port as 161, community as ``public'' and version as
+\textsl{SNMPv2c} are default settings, which have been held by three
+Lisp variables:
+%
+\begin{verbatim}
+(in-package :snmp)
+
+(defvar *default-snmp-version* +snmp-version-2c+)
+(defvar *default-snmp-port* 161)
+(defvar *default-snmp-community* "public")
+\end{verbatim}
+
+When operating on default settings, the query syntax can also be
+simplified into a hostname string instead of SNMP session instance:
+%
+\begin{verbatim}
+> (snmp:snmp-get "binghe-debian.local" "sysName.0")
+"binghe-debian.local"
+\end{verbatim}
+
+\subsubsection{SNMPv3}
+
+The major visibility changes of \textsl{SNMPv3} \cite{RFC:3411} are authenticate
+and encryption support.
+Opening an \textsl{SNMPv3} session needs more different keywords
+besides \texttt{host} and \texttt{port}:
+
+\begin{itemize}
+\item \texttt{version}, possible values for \textsl{SNMPv3} are
+  keyword \texttt{:v3}, \texttt{:version-3} and constant
+  \texttt{snmp:+snmp-version-3+}.
+
+\item \texttt{user}: A string as the SNMP security name \cite{RFC:3414}.
+
+\item \texttt{auth}: Authenticate protocol and key, valid arguments:
+  $\langle\mathrm{string}\rangle$,
+  \texttt{($\langle\mathrm{string}\rangle$
+    $\langle\mathrm{protocol}\rangle$)} or
+  \texttt{($\langle\mathrm{string}\rangle$
+    . $\langle\mathrm{protocol}\rangle$)}, which the
+  \texttt{$\langle\mathrm{protocol}\rangle$} can be \texttt{:md5}
+  (default) or \texttt{:sha1}.
+
+\item \texttt{priv}: Encryption/privacy protocol and key, valid
+  arguments: $\langle\mathrm{string}\rangle$,
+  \texttt{($\langle\mathrm{string}\rangle$
+    $\langle\mathrm{protocol}\rangle$)} or
+  \texttt{($\langle\mathrm{string}\rangle$
+    . $\langle\mathrm{protocol}\rangle$)}, which the
+  \texttt{$\langle\mathrm{protocol}\rangle$} can only be \texttt{:des}
+  at this time.
+\end{itemize}
+
+When both \texttt{auth} and \texttt{priv} are \texttt{nil},
+\textsl{SNMPv3} operates at security level ``noAuthNoPriv''; when only
+\texttt{auth} is set up, the security level is ``authNoPriv''; and
+when both are set up, the strongest method ``authPriv'' is used. When
+\textsl{SNMPv3} is being used, all arguments must be set explicitly by
+\texttt{snmp:open-session} or \texttt{snmp:with-open-session}. There's
+no express way as those in earlier SNMP protocol versions.
+
+For example, assume we have a remote SNMP peer which works through the
+following specification:
+%
+\begin{itemize}
+\item \texttt{(user "readonly")} (Security name is ``readonly'')
+\item \texttt{(auth (:md5 "ABCDEFGHABCDEFGH"))} (Authenticate protocol
+  is MD5, followed by the authenticate key)
+\end{itemize}
+
+Then a quick query on ``sysDescr.0'' would be:
+\begin{verbatim}
+> (snmp:with-open-session
+      (s "binghe-debian.local"
+         :version :v3 :user "readonly"
+         :auth '(:md5 "ABCDEFGHABCDEFGH"))
+    (snmp:snmp-get s "sysDescr.0"))
+"Linux binghe-debian.local 2.6.26-1-amd64 #1
+ SMP Thu Oct 9 14:16:53 UTC 2008 x86_64"
+\end{verbatim}
+
+Here the \texttt{auth} argument \texttt{(:md5 "ABCDEFGHABCDEFGH")} can
+also use just \texttt{"ABCDEFGHABCDEFGH"} instead. That's because
+MD5\footnote{The actual authenticate protocol used by SNMP is
+  \textsl{HMAC-MD5-96} and \textsl{HMAC-SHA1-96}.} is the default
+authenticate protocol.
+
+\subsubsection{High-level SNMP Query}
+
+Recently a new feature has been added to \textsc{cl-net-snmp}: object-oriented
+and SQL-like SNMP query. The idea of using SQL-like syntax on query SNMP
+variables can be traced back to Wengyik Yeong's paper \cite{SNMPql} in 1990.
+However, in near 20 years, there's no other implementation on this idea.
+By using Common Lisp, the most dynamic programming language, \textsc{cl-net-snmp}
+goes even further.
+
+Query technologies is mainly used on \textsl{selective} or
+\textsl{fast} information retrieval from MIB tables.
+In \textsc{cl-net-snmp}, the ASN.1 compiler can compile MIB definitions
+into Common Lisp code. During this process, not only OID name to numbers
+information are saved, but also the structure of MIB tables. For example,
+the MIB table ``ifTable'' which contains network interface information,
+it's mainly defined by following MIB:
+\begin{verbatim}
+ifTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of interface entries.  The number of
+         entries is given by the value of ifNumber."
+    ::= { interfaces 2 }
+\end{verbatim}
+And the ``IfEntry'' is a ASN.1 type of \texttt{SEQUENCE}:
+\begin{verbatim}
+IfEntry ::=
+    SEQUENCE {
+        ifIndex           InterfaceIndex,
+        ifDescr           DisplayString,
+        ifType            IANAifType,
+        ifMtu             Integer32,
+        ifSpeed           Gauge32,
+        ifPhysAddress     PhysAddress,
+        ifAdminStatus     INTEGER,
+        ifOperStatus      INTEGER,
+        ifLastChange      TimeTicks,
+        ...
+        ifSpecific        OBJECT IDENTIFIER
+    }
+\end{verbatim}
+The ASN.1 compiler can compile above ``IfEntry'' type into a CLOS class definition:
+\begin{verbatim}
+(defclass |IfEntry| (sequence-type)
+  ((|ifIndex| :type |InterfaceIndex|)
+   (|ifDescr| :type |DisplayString|)
+   (|ifType| :type |IANAifType|)
+   (|ifMtu| :type |Integer32|)
+   (|ifSpeed| :type |Gauge32|)
+   (|ifPhysAddress| :type |PhysAddress|)
+   (|ifAdminStatus| :type integer)
+   (|ifOperStatus| :type integer)
+   (|ifLastChange| :type |TimeTicks|)
+   ...
+   (|ifSpecific| :type object-id)))
+\end{verbatim}
+These code could be compiled and loaded with SNMP package, and
+dynamic loading MIB files should be possible: most Common Lisp platform
+supports defining new CLOS classes even after delivery.
+Once the structure of MIB tables are known, rest work will be quite easy.
+A query on all interfaces information is like this:
+\begin{verbatim}
+> (snmp:snmp-select "ifTable"
+                    :from "binghe-debian.local")
+(#<ASN.1/IF-MIB::|IfEntry| 200E8A43>
+ #<ASN.1/IF-MIB::|IfEntry| 200A5DDF>)
+\end{verbatim}
+\texttt{snmp:snmp-select} is a high-level API. It could return CLOS instances
+instead of lists, and a simple query like above may involve various low-level
+SNMP operations. The OO idea is learnt from LispWorks
+\textsl{CommonSQL}.
+The internal operations of above query will first use
+\texttt{snmp:snmp-get-next} to test how many ``lines'' does the table have.
+In this example, it has just two lines. Once the number of lines is known,
+then just using \texttt{snmp:snmp-get} to get each line will be OK. In above
+query example on \texttt{SNMPv2c}, there're only \textbf{4} UDP packets sent
+to get the whole table. Compare to that, the tradition way
+by using \texttt{snmp:snmp-walk} will costs 44 UDP packets (the column length
+of this table times its lines).
+
+There're two ways to get the actual data in returning instances. Assumes
+the first instance has been stored in a variable \texttt{interface}. One
+way is using \texttt{asn.1:plain-value} to convert the instance into lists
+of values:
+\begin{verbatim}
+> interface
+#<ASN.1/IF-MIB::|IfEntry| 200A170B>
+
+> (asn.1:plain-value interface)
+((#<ASN.1:OBJECT-ID IF-MIB::ifIndex (1) [0]> 2)
+ (#<ASN.1:OBJECT-ID IF-MIB::ifDescr (2) [0]> "eth0")
+ (#<ASN.1:OBJECT-ID IF-MIB::ifType (3) [0]> 6)
+ (#<ASN.1:OBJECT-ID IF-MIB::ifMtu (4) [0]> 1500)
+ (#<ASN.1:OBJECT-ID IF-MIB::ifSpeed (5) [0]>
+  #<ASN.1:GAUGE 10000000>)
+ ...
+ (#<ASN.1:OBJECT-ID IF-MIB::ifSpecific (22) [0]>
+  #<ASN.1:OBJECT-ID SNMPv2-SMI::zeroDotZero (0) [0]>))
+\end{verbatim}
+To retrieve specific item, the funtion \texttt{asn.1:slot-value-using-oid}
+can be used:
+\begin{verbatim}
+> (asn.1:slot-value-using-oid interface "ifDescr")
+"eth0"
+\end{verbatim}
+
+Conditional query is still under research. The most native way to
+represent SQL \texttt{WHERE} clause in \texttt{snmp:snmp-select}
+haven't determined.
+
+\subsection{Server-side SNMP}
+
+Server-side SNMP is mainly used for Lisp image being queried from
+outside. The entry API is how to start and stop the SNMP server, this
+can be done by \texttt{snmp:enable-snmp-service} and
+\texttt{snmp:disable-snmp-service}:
+\begin{verbatim}
+> (snmp:enable-snmp-service)
+#<SNMP:SNMP-SERVER SNMP Server at 0.0.0.0:8161>
+\end{verbatim}
+Above function will open a new Lisp thread which acts as a SNMP
+server. By default, the SNMP server listens on port 8161 and
+wild-cast (\texttt{0.0.0.0}) address. At current stage, no access
+control\footnote{The access control protocol used by SNMP is called View-based Access Control Model (VACM) \cite{RFC:3415}.}
+is implemented and only \textsl{SNMPv1/SNMPv2c} are
+supported. We can use the SNMP client API to query it:
+\begin{verbatim}
+> (setf snmp:*default-snmp-port* 8161)
+8161
+
+> (snmp:snmp-get "localhost" "sysDescr.0")
+"LispWorks Personal Edition 5.1.1 on
+ binghe-mac.people.163.org"
+\end{verbatim}
+Here we changed the default SNMP port to make things easier. Or we can
+use command-line utilities from Net-SNMP project:
+
+\begin{verbatim}
+$ snmpget -v 2c -c public localhost:8161 sysDescr.0
+SNMPv2-MIB::sysDescr.0 = STRING: LispWorks Personal\
+ Edition 5.1.1 on binghe-mac.people.163.org
+\end{verbatim}
+
+This time we do a ``SNMP walk'' on MIB ``system'' node:
+\begin{verbatim}
+> (snmp:snmp-walk "localhost" "system")
+((#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+  "LispWorks Personal Edition 5.1.1 on
+   binghe-mac.people.163.org")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysObjectID.0>
+  #<ASN.1:OBJECT-ID
+    LISP-MIB::clNetSnmpAgentLispWorks (5) [0]>)
+ (#<ASN.1:OBJECT-ID
+    DISMAN-EVENT-MIB::sysUpTimeInstance.0>
+  #<ASN.1:TIMETICKS (69652) 0:11:36.52>)
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysContact.0>
+  "Chun Tian (binghe) <binghe.lisp@@gmail.com>")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysName.0>
+  "binghe-mac.local (binghe-mac)")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysLocation.0>
+  "binghe-mac.people.163.org")
+ ...)
+\end{verbatim}
+
+An SNMP server is only useful when there is useful information in it.
+It's extensible: new SNMP scalar variables or tables can be defined on the
+fly. There're two high-level API macros which can be used:
+\texttt{snmp:def-scalar-variable} and \texttt{snmp:def-listy-mib-table}.
+\begin{verbatim}
+def-scalar-variable (name (agent) &body body)
+def-listy-mib-table (name (agent ids) &body body)
+\end{verbatim}
+And a low-level API function \texttt{snmp:register-variable}:
+\begin{verbatim}
+register-variable (oid function &key dispatch-table
+                                walk-table walk-list)
+\end{verbatim}
+For example, the variable ``sysDescr.0'' is defined by the following
+form:
+\begin{verbatim}
+(def-scalar-variable "sysDescr" (agent)
+  (format nil "~A ~A on ~A"
+          (lisp-implementation-type)
+          (lisp-implementation-version)
+          (machine-instance)))
+\end{verbatim}
+When the SNMP server running in LispWorks being queried from outside
+by Net-SNMP utilities, the query to ``sysDescr.0'' may shows:
+\begin{verbatim}
+$ snmpget -v 2c -c public binghe-debian.local:8161\
+  sysDescr.0
+
+SNMPv2-MIB::sysDescr.0 = STRING:\
+ LispWorks 5.1.1 on binghe-debian.local
+\end{verbatim}
+The \texttt{agent} parameter in above
+\texttt{snmp:def-scalar-variable} form is used to refer to current
+SNMP agent instance, which can be used to access the status of current
+agent. For example:
+\begin{verbatim}
+(def-scalar-variable "snmpInPkts" (agent)
+  (counter32 (slot-value agent 'in-pkts)))
+\end{verbatim}
+When ``snmpInPkts.0'' is queried, the slot value \texttt{in-pkts} of current
+agent instance will be coerced into ASN.1 \texttt{Counter32} type and
+returned.\footnote{This variable has't been actually used in current version.}
+
+A MIB Table can be defined as per column. For example, to define a
+column from ``sysORUpTime.1'' to ``sysORUpTime.9'', we have three
+ways:
+%
+\begin{verbatim}
+(def-listy-mib-table "sysORUpTime" (agent ids)
+  (if (null ids)
+    '((1) (2) (3) (4) (5) (6) (7) (8) (9))
+    (timeticks 0)))
+
+(def-listy-mib-table "sysORUpTime" (agent ids)
+  (if (null ids)
+    '(1 2 3 4 5 6 7 8 9)
+    (timeticks 0)))
+
+(def-listy-mib-table "sysORUpTime" (agent ids)
+  (if (null ids)
+    9
+    (timeticks 0)))
+\end{verbatim}
+
+The \texttt{ids} parameter means the \textbf{rest} OID components
+when a query gets to current \textbf{base} OID (``sysORUpTime'' here).
+You can treat the \texttt{snmp:def-listy-mib-table} body as an ordinary
+function body. When
+it's called by an \texttt{ids} argument as \texttt{nil}, it should
+return all its valid children to the SNMP agent. A list \texttt{'((1)
+  (2) (3) (4) (5) (6) (7) (8) (9))} means each valid rest OID
+has only one element. For the first child, it's just the number
+``1''. When a child has rest OID as only one element, the
+long list can be simplified into \texttt{'(1 2 3 4 5 6 7 8 9)}, which
+just means ``sysORUpTime.1'', ``sysORUpTime.2'',
+... ``sysORUpTime.9''. And, when all the children have a single number
+and they are consistent (from 1 to N), the list can be again simplified
+into just one number ``9'' which also means from 1 to 9, then
+\texttt{(1)} to \texttt{(9)}.
+
+For dynamic MIB tables, just let the form (as a function) returns an
+dynamic list when \texttt{ids} given \texttt{nil} will work, like this
+one:
+%
+\begin{verbatim}
+(def-listy-mib-table "lispFeatureName" (agent ids)
+  (let* ((features *features*)
+         (number-of-features
+          (list-length features)))
+    (if (null ids)
+      number-of-features
+      (when (plusp (car ids))
+        (->string (nth (mod (1- (car ids))
+                            number-of-features)
+                       features))))))
+\end{verbatim}
+
+Above ``lispFeatureName'' can return all elements of
+\texttt{*features*} in current Lisp system as ASN.1 \texttt{OCTET
+  STRING}. Every time it's called, the \texttt{number-of-features}
+will be calculated. It's not 	quite optimized here. If you want faster
+reply, the list count progress should be defined outside of the
+function and as a cache to the actual value, and a separate thread may
+be used to update all these parameter values on schedule.
+
+To use above two macros for user-defined MIB nodes, named OID nodes
+must be defined first, like above ``sysDescr'' or
+``sysORUpTime''. There are two ways to achieve the goal: define a
+MIB file in ASN.1 syntax and use the ASN.1 compiler from ASN.1 package to
+translate it into LISP source code, or
+directly write the Lisp version of the MIB definition:
+
+\begin{verbatim}
+(defoid |lispFeatureName| (|lispFeatureEntry| 2)
+  (:type 'object-type)
+  (:syntax '|DisplayString|)
+  (:max-access '|read-only|)
+  (:status '|current|)
+  (:description
+   "The string name of each element in *features*."))
+\end{verbatim}
+
+At compile-time, above definitions then will be translated into following form:
+\begin{verbatim}
+(IN-PACKAGE "ASN.1/LISP-MIB")
+
+(PROGN
+  (DEFVAR |lispFeatureName|
+    (OR (ENSURE-OID |lispFeatureEntry| 2)
+        (MAKE-INSTANCE 'OBJECT-ID
+          :NAME '|lispFeatureName|
+          :VALUE 2
+          :PARENT |lispFeatureEntry|
+          :MODULE *CURRENT-MODULE*
+          :TYPE 'OBJECT-TYPE
+          :SYNTAX '|DisplayString|
+          :MAX-ACCESS '|read-only|
+          :STATUS '|current|
+          :DESCRIPTION
+  "The string name of each element in *features*.")))
+  (EVAL-WHEN (:LOAD-TOPLEVEL :EXECUTE)
+    (ASN.1::REGISTER-OID
+      (SYMBOL-NAME '|lispFeatureName|)
+      '|lispFeatureName|)))
+\end{verbatim}
+
+The low-level function \texttt{snmp:register-variable} is used by
+\texttt{snmp:def-scalar-variable} and
+\texttt{snmp:def-listy-mib-table}.  Above definitions for ``sysDescr''
+will be macro-expanded into:
+%
+\begin{verbatim}
+(IN-PACKAGE "SNMP")
+
+(PROGN
+  (DEFUN |ASN.1/SNMPv2-MIB|::|sysDescr|
+         (AGENT &OPTIONAL #:G1290)
+    (DECLARE (IGNORABLE AGENT))
+    (IF (NULL #:G1290)
+        0
+      (FORMAT NIL
+              "~A ~A on ~A"
+              (LISP-IMPLEMENTATION-TYPE)
+              (LISP-IMPLEMENTATION-VERSION)
+              (MACHINE-INSTANCE))))
+  (EVAL-WHEN (:LOAD-TOPLEVEL :EXECUTE)
+    (REGISTER-VARIABLE
+      (OID "sysDescr")
+      #'|ASN.1/SNMPv2-MIB|::|sysDescr|)))
+\end{verbatim}
+
+Besides, \texttt{snmp:register-variable} has some additional keywords, which
+can be used explicitly to define MIB nodes in SNMP agent other than
+the default. It's possible to run multiple different SNMP agents
+simultaneously, but more codes are needed. You even cannot use
+\texttt{snmp:enable-snmp-service} here.
+
+\section{LISP-MIB}
+
+Though just registering an OID node or sub-tree in SNMP server will
+fit the goal for querying information from remote SNMP peers, if there's
+no coordination on places, conflict would happen and information
+defined by different SNMP vendors would be impossible to live
+together. SNMP community spend so much time on how to define a common
+framework to hold all variables from SNMP
+vendors, that is the MIB (Management Information Base)\cite{RFC:3418}.
+
+Another side: a SNMP server running in Lisp image should be possible
+to reply the status of Lisp system itself, for example, the most
+basically, implementation type and version, which can be returned by
+standard functions. ANSI Common Lisp has also defined some status
+functions of the Lisp system itself (i.e. the internal run time and
+real time), useful constants
+(i.e. \texttt{internal\-time-\-units-\-per\--second}), and special variables
+(\texttt{*read-\-eval*}, \texttt{*print-\-circle*}, ...) All these
+information plus implementation-specific data maybe useful to monitor
+and just query from outside world. For popular Lisp packages and some
+small applications which have their own status and parameters, the
+requirement for MIB sub-tree should also be considered.
+
+There's one place in MIB tree which just is left for SNMP vendors: the
+``enterprises''
+node\footnote{\textsl{iso.org.dod.internet.private.enterprises} (OID:
+  1.3.6.1.4.1)}. Since there's no Lisp-related MIB registered before,
+A new enterprise number from IANA
+\footnote{\texttt{http://www.iana.org/assignments/enterprise-numbers}}
+has been registered: \textbf{31609 (lisp)},
+which allocated to the \textbf{LISP-MIB}.
+
+The root of LISP-MIB is ``enterprises.lisp'' (31609). Its two children
+are ``common-lisp'' and ``scheme''.
+
+In ``common-lisp'' node, there're four common children at present:
+\begin{itemize}
+\item \texttt{lispSystem}, the summary information of current Lisp
+  system.
+\item \texttt{lispConstants}, constants of limits of number-types.
+\item \texttt{lispPackages}, information store for lisp packages
+  (utilities).
+\item \texttt{lispApplications}, information store for lisp
+  applications.
+\end{itemize}
+Other children of ``common-lisp'' node are reserved for Common Lisp
+implementations.  Implementation-specific variables should be put
+there.
+
+The framework of LISP-MIB\footnote{The MIB definition of
+  LISP-MIB and other LISP-*-MIBs in ASN.1 can be found in \textsc{cl-net-snmp}'s
+  Subversion repository:
+  \texttt{https://cl-net-snmp.svn.sourceforge.net/svnroot/cl-net\-snmp/snmp/trunk/asn1/lisp}}
+is shown in Figure \ref{fig:lisp-mib}.
+
+\begin{figure}
+\begin{verbatim}
+lisp (31609)
+  common-lisp (1)
+    lispSystem (1)
+      lispImplementationType (1)
+      lispImplementationVersion (2)
+      lispLongSiteName (3)
+      lispShortSiteName (4)
+      lispMachineInstance (5)
+      lispMachineType (6)
+      lispMachineVersion (7)
+      lispSoftwareType (8)
+      lispSoftwareVersion (9)
+      lispInternalRealTime (10)
+      lispInternalRunTime (11)
+      lispInternalTimeUnitsPerSecond (12)
+      lispUniversalTime (13)
+      lispFeatureTable (14)
+      lispPackageTable (15)
+      lispModuleTable (16)
+    lispConstants (2)
+      lispMostPositiveShortFloat (1)
+      lispLeastPositiveShortFloat (2)
+      lispLeastPositiveNormalizedShortFloat (3)
+      ...
+    lispPackages (3)
+      cl-net-snmp (1)
+        clNetSnmpObjects (1)
+        clNetSnmpEnumerations (2)
+          clNetSnmpAgentOIDs (1)
+            clNetSnmpAgent (1)
+            clNetSnmpAgentLispWorks (5)
+            clNetSnmpAgentCMUCL (6)
+            ...
+      cl-http (2)
+      ...
+    lispApplications (4)
+    lispworks (5)
+    cmucl (6)
+    sbcl (7)
+    clozure (8)
+    allegro (9)
+    scl (10)
+    ...
+  scheme (2)
+\end{verbatim}  
+  \caption{LISP-MIB}
+  \label{fig:lisp-mib}
+\end{figure}
+
+\section{Implementation details}
+
+%\subsection{History of cl-net-snmp Project}
+
+%The \textsc{cl-net-snmp} project started from March 2007. Its first
+%several versions are CFFI-based API wrappers on Net-SNMP as
+%its name (\textsc{cl-\textbf{net-snmp}}) indicates. There're some restrictions
+%when based on Net-SNMP. To support MIB, the corresponding
+%MIB definition files must be shipped, so it's impossible to deliver a
+%single Lisp image to hold all things together. Soon after the
+%``0.1.0'' release on April 8, 2007, the author turned to pure-lisp
+%implementation which support the OID name resolution.
+
+%On September 28, 2007, the \textsc{cl-net-snmp} 1.0 was released,
+%which support client protocol of SNMPv1 and SNMPv2c. In this version,
+%a LALR parser called ZEBU\footnote{\texttt{http://www.cliki.net/Zebu}}
+%was used to parse MIB files, but only
+%OID definitions are actually processed. In this version all OID information
+%are read into a single list called ``MIB tree''.
+%The correspond tree maintenance API and tree structure are learnt from Simon
+%Leinen's \textsc{sysman} project.
+
+%In \textsc{sysman}, MIB definition files are first translated
+%into a plain text format by a script outside Lisp, then easily loaded by Lisp
+%to build the MIB tree. So there's no ASN.1 parsing work in \textsc{sysman}.
+
+%Different from \textsc{sysman}, \textsc{cl-net-snmp} tries to
+%implement the SNMP protocol in a ``nature Lisp way'', even more
+%naturally than the C-based Net-SNMP project. ZEBU is hard to use
+%for parsing ASN.1, partly because of its built-in
+%regex-based lexer, which cannot be used to read multi-line strings
+%(just like the Lisp strings).
+
+%Starting from version 1.2, a simple ``ASN.1 compiler'' had been introduced
+%to compile MIB definition file directly into Common Lisp source code.
+%ASN.1 syntax is very hard to parse, especially when it contains obsolete
+%\texttt{MACRO} definitions. And there're many ambiguities when parsing
+%ASN.1 by LALR(1). For a detailed discussion on the difficulty
+%of parsing ASN.1, see chapter 22.3 in O. Dubuisson's ASN.1 Book \cite{Book:ASN.1}.
+
+%The ASN.1 parser defined in \textsc{cl-net-snmp} is based on
+%LispWorks' \textsc{parsergen} package. It still needed
+%a lexer to work together. Due to the similarity between ASN.1 token and
+%Lisp token, the author found that just use a modified CL readtable
+%will be fit all the need. Hacking on CL readtables is a bit crazy but it does work
+%and it's very fast. Since then, the ASN.1 part of code had been separated from
+%SNMP package to make a new standalone ASN.1 package. The new ASN.1
+%package has two parts, one is the runtime, which runs on all
+%support CL implementations and is depended by the main SNMP package;
+%the other part, a compiler, which only works on LispWorks, and is only
+%needed when people want to load new MIB files which isn't shipped with the SNMP
+%package.
+
+%More than half a year later, on Jul 13, 2008, the long-awaited
+%\textsc{cl-net-snmp} 2.0 was out. All above ideas were well
+%implemented. Starting from that release, the project has been divided
+%into several sub-projects and each of them has its own version
+%numbers. The author tried to manage the version policy as softwares on old
+%Symbolics Lisp machine \cite{Symbolics:Patch}: each software has a major version
+%number and a minor version number; if the software can be updated by
+%loadable lisp patch, only minor version is increased, and if the
+%structure of lisp code is changed much or any refactoring happens, the
+%major version must be increased to start a fresh new version. One such
+%example is the \textsl{CL-HTTP}\footnote{\texttt{http://www.cl-http.org:8001}}
+%project. At a early stage, it's hard to keep source code stable, so after
+%fixed some bugs the version 3.0 just been released on Jul 21, 2008, which is
+%the first public release of new design.  Following features are supported at that time:
+%\begin{itemize}
+%\item Full SNMP protocol version support (\textsl{SNMPv1}, \textsl{SNMPv2c}, \textsl{SNMPv3}).
+%\item Support MIB and ASN.1 OID names.
+%\item Fast BER encode/decode based on CLOS.
+%\item UDP auto-retransmit support.
+%\item Simple SNMP Server on LispWorks.
+%\end{itemize}
+%The simple SNMP server is a very early support on server side
+%SNMP: no \textsl{SNMPv3}, no access control (VACM), even ``SNMP walk''
+%is not supported yet. All that use can do on client side is to \textsl{get}
+%values of MIB variables.
+
+%The next big step is the 5.0 release on Sep 8, 2008. Start from this version,
+%the SNMP server can run on every support CLs. It's based on
+%\textsc{usocket}\footnote{\texttt{http://common-lisp.net/project/usocket}}
+%project and portable-threads package from
+%\textsl{GBBopen}\footnote{\texttt{http://gbbopen.org}}
+%project. \textsc{cl-net-snmp} 5.5, released on Sep 24, 2008, adds full
+%``SNMP walk'' support for the SNMP server, and start from this
+%version, a LISP-MIB has been defined to standardize the server-side
+%variables in SNMP server, but the server side is still lacking in VACM
+%support. \textsc{cl-net-snmp} 5.19 is the latest release when writing
+%this paper. It fixed many bugs, and its API is explained in this
+%paper.
+
+%Recently, more new features are added into \textsc{cl-net-snmp}, during
+%draft versions and final version of this ILC paper. Some of them
+%will also explained.
+
+\subsection{Portable UDP Networking}
+
+There's few portable UDP networking packages in Common Lisp community,
+partly because UDP applications is rare. One UNIX derived systems, the
+\textsl{IOlib}\footnote{\texttt{http://common-lisp.net/project/iolib}}
+package is a good choice for portable networking: it exports the POSIX
+compatibility layer through
+\textsl{CFFI}\footnote{\texttt{http://common-lisp.net/project/cffi}}
+and has a high-level networking package (net.sockets) and a I/O
+multiplex package (io.multiplex). However, due to its heavily dependence
+on foreign function interface (FFI) and C code, it will be a bit hard
+to deliver applications into single standalone executions on commercial
+Common Lisp platforms such as LispWorks. After some investigation,
+the \textsc{usocket}\footnote{\texttt{http://common-lisp.net/project/usocket}}
+project was been chosen to extend the support on UDP/IP, because \textsc{usocket}
+already has a very nice networking API framework.
+
+\textsc{usocket} is much simpler than \textsl{IOlib}. It tries to use
+networking APIs which each supported CL implementations already have, and
+add foreign functions (as Lisp code) through FFI interface of their own when
+necessary. So there's no dependency on \textsl{CFFI} and any other C
+code (except on ECL, its FFI interface need C code as embeddable). The
+\textsc{usocket} project also has a high-level \texttt{wait-for-input}
+function which work in front of UNIX system call \texttt{select()}
+or other similar funtions, so users can use \texttt{wait-for-input)}
+to swap multiple UDP messages from multiple sockets simultaneously
+in one thread.
+
+An \textsc{usocket-udp}
+\footnote{\texttt{http://common-lisp.net/projects/cl-net-snmp/usocket.html}} sub-project has been written for the SNMP package,
+it implements additional API which is suggested by Erik Huelsmann,
+the \textsc{usocket} maintainer. The new functions \texttt{socket-send} and
+\texttt{socket-receive} can be used to operate on a new class of
+socket called \texttt{datagram-usocket}. \textsc{usocket-udp} depends
+on \textsc{usocket} 0.4.x, with the first 0.4.0 released on Oct 28,
+2008. Erik also accepted me to the \textsc{usocket} team, which the
+next major release will contain the UDP support.
+
+Another issue in UDP network programming is that user code may deal
+with packet loss, because UDP is not reliable. A simple way to handle
+it is used by Net-SNMP project: define a maximum retry time
+and a timeout value, and resend messages on timeout. \textsc{cl-net-snmp}
+adopted a more complicated model, it used an ``auto retransmit''
+approach \cite{Jacobson:RTT} which usually used in TCP networking: the
+timeout value is not fixed but calculated by actual message round-trip
+time (RTT). The maximum retry time is still a fix number, as the
+timeout value being a range (default is 2~60 seconds). A new
+high-level \texttt{socket-sync} function has been defined to do this
+automatically.
+
+\subsection{ASN.1 to Common Lisp language mapping}
+
+ASN.1 (Abstract Syntax Notation One) \cite{ISO:ASN.1} is an
+international standard which aims at specifying data used in
+telecommunication protocols. For more details on ASN.1 and its
+history, see Olivier Dubuisson's famous book \cite{Book:ASN.1}.
+
+SNMP highly depends on ASN.1: SNMP MIB (Management Information Base)
+\cite{RFC:3418} is full defined in SMI (Structure Management Information)
+language, a subset of ASN.1; The most basic data type in SNMP, object identifier (OID),
+is just a standard ASN.1 type; all data in SNMP message are enclosed as an ASN.1 \texttt{SEQUENCE} which is then
+encoded by BER (Basic Encode Rule) as one of
+encoding/decoding methods for ASN.1.
+
+In ASN.1 package, the ASN.1 \texttt{SEQUENCE} type is generally mapped
+to Common Lisp \texttt{sequence}, which has two subtypes: \texttt{vector}
+and \texttt{list}.
+There's only one exception: the empty ASN.1 \texttt{SEQUENCE} is
+mapped into empty vector \texttt{\#()} instead of \texttt{nil}, the empty
+list. That's because \texttt{nil} is already mapped to ASN.1 type \texttt{NULL},
+which is also the only valid element of this type.
+
+There're other ASN.1 primitive types such as all kinds of strings and numbers
+which are used by SNMP and they're mapped into correspond Common Lisp types.
+Table \ref{table:asn.1-type-mapping} shows most of these type mapping
+the ASN.1 package currently supports. Some ASN.1 types are mapped
+into CLOS classes.\footnote{In \textsc{cl-net-snmp} 5.x, strings and integers
+are just mapped into CL types \texttt{string} and \texttt{integer}. To support
+SMI textual conventions (TC, see \cite{RFC:2579}), more complex mapping is needed.
+This will be done in next major \textsc{cl-net-snmp} version.}
+
+\begin{table}
+  \centering
+  \caption{ASN.1 to Common Lisp Type Mapping}
+  \label{table:asn.1-type-mapping}
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{ASN.1 Type} & \textbf{Common Lisp Type}\\
+    \hline
+    \texttt{OBJECT IDENTIFIER} & \texttt{ASN.1:OBJECT-ID}\\
+    \texttt{INTEGER} & \texttt{CL:INTEGER}\\
+    \texttt{NULL} & \texttt{CL:NULL}\\
+    \texttt{SEQUENCE} & \texttt{CL:SEQUENCE}\\
+    \texttt{OCTET STRING} & \texttt{CL:STRING}\\
+    \texttt{IPADDRESS} & \texttt{ASN.1:IPADDRESS}\\
+    \texttt{COUNTER32} & \texttt{ASN.1:COUNTER32}\\
+    \texttt{COUNTER64} & \texttt{ASN.1:COUNTER64}\\
+    \texttt{GAUGE} & \texttt{ASN.1:GAUGE}\\
+    \texttt{TIMETICKS} & \texttt{ASN.1:TIMETICKS}\\
+    \texttt{OPAQUE} & \texttt{ASN.1:OPAQUE}\\
+    \hline
+  \end{tabular}
+\end{table}
+
+In current released \textsc{cl-net-snmp} versions, ASN.1 module is not
+supported. That is: all MIB definitions are compiled into Common Lisp
+code in package \texttt{ASN.1}. This may cause symbol clash. Recently this
+issue has been solved, now ASN.1 modules are directly mapped into
+Common Lisp packages as their original module names.
+
+\subsubsection{BER support}
+
+The BER (Basic Encoding Rule) \cite{ISO:BER} is
+essential to implement SNMP because it makes the connection between
+ASN.1 object and actual networking packets. BER encodes
+every ASN.1 object into three parts: type, length and value (TLV).
+The corresponding API funtions for
+BER support in ASN.1 package are \texttt{asn.1:ber-encode} and
+\texttt{asn.1:ber-decode}. The function \texttt{asn.1:ber-encode} accepts
+any Lisp object and try to encode it into a vector of octets
+according to BER, and \texttt{asn.1:ber-decode} accepts
+a sequence of octets or any octet stream and try to decode into
+correspond Lisp object. For example, an integer 10000 can be
+encoded into four bytes: 2, 2, 39 and 16, of which the first ``2''
+means ASN.1 type \texttt{INTEGER}, the second ``2'' means following
+part has \textsl{two} bytes, and 39 and 16 mean the actual value
+is 10000 ($39*256+16 = 10000$):
+
+\begin{verbatim}
+> (asn.1:ber-encode 10000)
+#(2 2 39 16)
+
+> (asn.1:ber-decode #(2 2 39 16))
+10000
+\end{verbatim}
+
+Another typical example is the encoding of an ASN.1 \texttt{SEQUENCE}.
+This type is usually used to implement structure in other languages.
+The elements of an ASN.1 \texttt{SEQUENCE} can be anything include
+\texttt{SEQUENCE}.  For example, a sequence which contains another
+sequence which contains an integer 100, a string ``abc'', and a
+\texttt{NULL} data can be expressed into \texttt{\#(\#(100 "abc"
+  nil))} in Common Lisp according to our language mapping design. It
+can be encoded and decoded correctly:
+%
+\begin{verbatim}
+> (asn.1:ber-encode #(#(100 "abc" nil)))
+#(48 12 48 10 2 1 100 4 3 97 98 99 5 0)
+
+> (asn.1:ber-decode *)
+#(#(100 "abc" NIL))
+\end{verbatim}
+
+The type byte of sequence is 48. Three elements in inner sequence can
+be seen as encoded bytes: \texttt{\#(2 1 100)} (integer 100),
+\texttt{\#(4 3 97 98 99)} (string \texttt{"abc"}), and \texttt{\#(5 0)}
+(\texttt{nil}).
+
+Both \texttt{ASN.1:BER-ENCODE} and \texttt{ASN.1:BER-DECODE} are
+CLOS-based generic functions. \texttt{ASN.1:BER-ENCODE} dispatches on
+Common Lisp types, for example the \texttt{INTEGER}:
+
+\begin{verbatim}
+(defmethod ber-encode ((value integer))
+  (multiple-value-bind (v l)
+      (ber-encode-integer value)
+    (concatenate 'vector
+                 (ber-encode-type 0 0 +asn-integer+)
+                 (ber-encode-length l)
+                 v)))
+\end{verbatim}
+
+The method \texttt{(METHOD ASN.1:BER-ENCODE (INTEGER))} generates a
+vector containing type bytes, length bytes and encoding bytes of the
+integer. When decoding on integers, generic function
+\texttt{ASN.1:BER-DECODE} accepts sequences or streams which contain
+data, and then call \texttt{ASN.1:BER-DECODE-VALUE} which dispatches
+on keywords (\texttt{:integer} here):
+
+\begin{verbatim}
+(defmethod ber-decode ((value sequence))
+  (let ((stream (make-instance 'ber-stream
+                               :sequence value)))
+    (ber-decode stream)))
+
+(defmethod ber-decode ((stream stream))
+  (multiple-value-bind (type type-bytes)
+      (ber-decode-type stream)
+    (multiple-value-bind (length length-bytes)
+        (ber-decode-length stream)
+      (if type
+        (ber-decode-value stream type length)
+        ;; When unknown type detected, recover the
+        ;; whole data into an ASN.1 RAW object.
+        (ber-decode-value
+          stream type
+          (cons length
+            (append type-bytes length-bytes)))))))
+
+(defmethod ber-decode-value ((stream stream)
+                             (type (eql :integer))
+                             length)
+  (declare (type fixnum length) (ignore type))
+  (ber-decode-integer-value stream length))
+\end{verbatim}
+
+This BER engine in ASN.1 packages is extensible. That's the biggest
+difference from other existing BER engines for Common Lisp which can be
+found in \textsc{sysman} and \textsc{trivial-ldap}.  The first
+value returned by \texttt{asn.1:ber-decode-type} comes from a
+hash-table \texttt{asn.1::*ber-dispatch-table*}, and all ASN.1 types
+are registered into this hash-table:
+
+\begin{verbatim}
+(defun install-asn.1-type (type class p/c tags)
+  (setf (gethash (list class p/c tags)
+                 *ber-dispatch-table*)
+        type))
+
+(install-asn.1-type :integer 0 0 +asn-integer+)
+\end{verbatim}
+
+\subsubsection{MIB support}
+
+The ASN.1 \texttt{OBJECT IDENTIFIER} (OID) type is the most important
+type in ASN.1.
+The way to handle the structure of OID instances
+consist the biggest differences between ASN.1 implementations.
+Most implementations store full OID number list in each OID
+instance.
+In \textsc{cl-net-snmp}, ASN.1 OID type in defined by
+\texttt{asn.1:object-id} class. Different with most ASN.1 implementations,
+\texttt{asn.1:object-id} instances doesn't hold the full OID number list
+but only the last one. To construct
+a complete OID number list, the rest information is accessed through
+the ``parent'' OID instance of the current one. The definition of the
+class \texttt{asn.1:object-id} is shown in figure \ref{defclass:object-id}.
+
+\begin{figure}
+\begin{verbatim}
+(defclass object-id (asn.1-type)
+  ((name        :type symbol
+                :reader oid-name
+                :initarg :name)
+   (value       :type integer
+                :reader oid-value
+                :initarg :value)
+   (type        :type oid-type
+                :reader oid-type
+                :initarg :type)
+   (syntax      :type oid-syntax
+                :reader oid-syntax
+                :initarg :syntax)
+   (max-access  :type access
+                :reader oid-max-access
+                :initarg :max-access)
+   (status      :type status
+                :reader oid-status
+                :initarg :status)
+   (description :type string
+                :reader oid-description
+                :initarg :description)
+   (module      :type symbol
+                :reader oid-module
+                :initarg :module)
+   (parent      :type object-id
+                :reader oid-parent
+                :initarg :parent)
+   (children    :type hash-table
+                :accessor oid-children
+                :initform (make-hash-table)))
+  (:documentation "OBJECT IDENTIFIER"))
+\end{verbatim}
+  \caption{The definition of \texttt{asn.1:object-id} class}
+  \label{defclass:object-id}
+\end{figure}
+
+The only necessary slots are \texttt{parent} and \texttt{value}.
+The \texttt{name} slot is only used by named OID instances (OIDs defined in MIB).
+The interface function to build or access an OID instance is
+\texttt{ASN.1:OID}.  For example, the OID ``sysDescr.0''
+(1.3.6.1.2.1.1.1.0) may be accessed through many ways, which is shown
+in Table \ref{table:oid}.
+
+\begin{table}
+  \centering
+  \caption{Different ways to represent OID ``sysDescr.0''}
+  \label{table:oid}
+  \begin{tabular}{|l|}
+    \hline
+    \texttt{(asn.1:oid "sysDescr.0")}\\\hline
+	\texttt{(asn.1:oid "SNMPv2-MIB::sysDescr.0")}\\\hline
+    \texttt{(asn.1:oid "system.sysDescr.0")}\\\hline
+    \texttt{(asn.1:oid "1.3.6.1.2.1.1.1.0")}\\\hline
+    \texttt{(asn.1:oid ".1.3.6.1.2.1.1.1.0")}\\\hline
+    \texttt{(asn.1:oid "0.1.3.6.1.2.1.1.1.0")}\\\hline
+    \texttt{(asn.1:oid \#(1 3 6 1 2 1 1 1 0))}\\\hline
+    \texttt{(asn.1:oid '(1 3 6 1 2 1 1 1 0))}\\\hline
+    \texttt{(asn.1:oid (list (asn.1:oid "sysDescr") 0))}\\\hline
+    \texttt{(asn.1:oid (list |SNMPv2-MIB|::|sysDescr| 0))}\\
+    \hline
+  \end{tabular}
+\end{table}
+
+The MIB node name ``sysDescr'' is pre-defined in Lisp code which is
+generated from its MIB definitions by the ASN.1 compiler. Almost all MIB
+files shipped with Net-SNMP are provided by the SNMP package.
+
+In recent \textsc{cl-net-snmp}, ASN.1 modules has been mapped
+into Common Lisp packages. Each named OID is actually a Lisp variable
+in their correspond package, the ``sysDescr'' OID instance is stored
+in \texttt{|SNMPv2-MIB|::|sysDescr|}:
+\begin{verbatim}
+> |SNMPv2-MIB|::|sysDescr|
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr (1) [0]>
+\end{verbatim}
+The internal structure of this OID instance is shown in Table
+\ref{table:object-id}.
+
+\begin{table}
+  \centering
+  \caption{Internal structure of \texttt{OBJECT-ID} instance}
+  \label{table:object-id}
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Slot} & \textbf{Value}\\
+    \hline
+    \texttt{children} & \texttt{\#<EQL Hash Table\{0\} 21B1550B>}\\
+    \texttt{description} & \texttt{"A textual description of the entity."}\\
+    \texttt{max-access} & \texttt{ASN.1::|read-only|}\\
+    \texttt{module} & \texttt{ASN.1::|SNMPv2-MIB|}\\
+    \texttt{name} & \texttt{|ASN.1/SNMPv2-MIB|::|sysDescr|}\\
+    \texttt{parent} & \texttt{\#<ASN.1:OBJECT-ID}\\
+    & \texttt{\ \ SNMPv2-MIB::system (1) [9]>}\\
+    \texttt{status} & \texttt{ASN.1::|current|}\\
+    \texttt{syntax} & \texttt{T}\\
+    \texttt{type} & \texttt{ASN.1::OBJECT-TYPE}\\
+    \texttt{value} & \texttt{1}\\
+    \hline
+  \end{tabular}
+\end{table}
+
+Compared with its original definition in ``SNMPv2-MIB.txt'', almost
+all information except the SYNTAX part is saved:
+
+\begin{verbatim}
+sysDescr OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the entity.
+         This value should include the full
+         name and version identification of
+         the system's hardware type, software
+         operating-system,
+         and networking software."
+    ::= { system 1 }
+\end{verbatim}
+
+In Table \ref{table:object-id}, the value of slot \texttt{parent}
+is another OID instance, which is stored in variable
+\texttt{|SNMPv2-MIB|::|system|}:
+
+\begin{verbatim}
+> (asn.1:oid-parent |SNMPv2-MIB|::|sysDescr|)
+#<ASN.1:OBJECT-ID SNMPv2-MIB::system (1) [9]>
+
+> |SNMPv2-MIB|::|system|
+#<ASN.1:OBJECT-ID SNMPv2-MIB::system (1) [9]>
+
+> (eq * **)
+T
+
+> (asn.1:oid-name-list |SNMPv2-MIB|::|system|)
+("iso" "org" "dod" "internet" "mgmt" "mib-2"
+ "system")
+
+> (asn.1:oid-number-list |SNMPv2-MIB|::|system|)
+(1 3 6 1 2 1 1)
+\end{verbatim}
+
+Actually all named OID instances have another
+named OID instances as their parent or children which can be
+accessed from their corresponding slots; all and only these named
+OID instances are stored as one conceptual ``MIB tree''.
+OID instances which doesn't have a name (like
+``sysDescr.0'') are created by \texttt{ASN.1:OID} function when it's been called every time. For these unnamed OID instances, the \texttt{parent} slot are
+used for them to track back full OID number list when being used by SNMP operations.
+
+The ``root'' node of the MIB tree is \texttt{(OID "zero")}, which
+is also assigned in Lisp variable \texttt{ASN.1::*ROOT-OBJECT-ID*}.
+Its the entry to all named MIB nodes:
+
+\begin{verbatim}
+> asn.1::*root-object-id*
+#<ASN.1:OBJECT-ID zero (0) [2]>
+
+> (asn.1::list-children *)
+(#<ASN.1:OBJECT-ID iso (1) [1]>
+ #<ASN.1:OBJECT-ID SNMPv2-SMI::zeroDotZero (0) [0]>)
+\end{verbatim}
+
+\subsection{SNMP internal}
+
+Encryption and authentication support in \textsl{SNMPv3} need HMAC,
+DES, MD5 and SHA1 algorithms. This is already done by Nathan Froyd's \textsc{ironclad}%
+\footnote{\texttt{http://method-combination.net/lisp/ironclad/}}
+project, which supplies almost all authenticate and encryption
+algorithms written in pure Common Lisp.
+
+The internal work of SNMP interface functions is rather
+straightforward, following steps will happen:
+\begin{enumerate}
+\item Prepare a variable bindings list according to SNMP operation type and arguments.
+\item Create a \texttt{pdu} instance using above variable bindings list.
+\item Create a \texttt{message} instance and put above \texttt{pdu} instance in it.
+\item Encode the \texttt{message} to get the sending packet data.
+\item Send it, then get a response packet.
+\item Decode the response packet and create a new \texttt{message} instance from the decode result and the old \texttt{message} instance.
+\item Retrieve the variable bindings list from the \texttt{pdu} slot in above \texttt{message} instances.
+\item Generate return values from above variable bindings list.
+\end{enumerate}
+Though there're many steps on processing SNMP operations
+\cite{RFC:3412}, the core function,
+\texttt{snmp::snmp-request}, which do most steps in above and it's quite simple.
+The source code is shown in Figure \ref{func:snmp-request}.
+
+\begin{figure*}
+\begin{verbatim}
+(defmethod snmp-request ((session session) (request symbol) (bindings list)
+                         &key context)
+  (when bindings
+    (let ((vb (mapcar #'(lambda (x) (if (consp x)
+                                        (list (oid (first x)) (second x))
+                                        (list (oid x) nil)))
+                      bindings)))
+      ;; Get a report first if the session is new created.
+      (when (and (= (version-of session) +snmp-version-3+)
+                 (need-report-p session))
+        (snmp-report session :context context))
+      (let ((message (make-instance (gethash (type-of session) *session->message*)
+                                    :session session
+                                    :context (or context *default-context*)
+                                    :pdu (make-instance request
+                                                        :variable-bindings vb))))
+        (let ((reply (send-snmp-message session message)))
+          (when reply
+            (map 'list #'(lambda (x) (coerce x 'list))
+                 (variable-bindings-of (pdu-of reply)))))))))
+
+(defun snmp-get (session bindings &key context)
+  (let ((result (mapcar #'second
+                        (snmp-request session 'get-request-pdu bindings
+                                      :context context))))
+    (if (consp bindings) result (car result))))
+\end{verbatim}
+  \caption{The core SNMP function: \texttt{snmp-request}}
+  \label{func:snmp-request}
+\end{figure*}
+
+\section{Future Work}
+
+There's still lots of work to do. On ASN.1 side, the SMIv2
+Textual Convention (TC) \cite{RFC:2579} haven't been implemented.
+This part of work
+will give a better representation on strings and numbers used in
+SNMP.
+
+On client side SNMP, to fulfill the high performance requirements
+of enterprise applications, the SNMP client must be able to do
+multiple SNMP operations at the same
+time in a single thread, and even using sockets less than the number
+of remote SNMP peers. This feature has been asked by some customers,
+and there's already a MSI project\footnote{
+\texttt{http://www.msi.co.jp/\~{}fremlin/projects/snmp-async/}} which try
+to implement this feature on top of \textsc{cl-net-snmp}.
+
+On server side SNMP, the VACM (View-based Access
+Control Model) \cite{RFC:3415} is on the top of the TODO
+list, and it will be implemented in next \textsc{cl-net-snmp} version.
+
+There're also plans on improving GUI and Web interface of the SNMP package.
+Currently the GUI interface has only a graphical MIB browser based on
+LispWorks CAPI toolkit\footnote{
+\texttt{http://www.lispworks.com/products/capi.html}}, and it will be
+extend to a full featured SNMP GUI client tool and maybe turn to
+support the Common Lisp Interface Manager (CLIM). The Web interface
+will be based on CL-HTTP and try to provide a HTTP interface for client and 
+server side SNMP work.
+
+Obviously SNMP is not the only networking protocol which is based on
+ASN.1 and UDP.  The existing work of \textsc{cl-net-snmp} could be
+used to develop Common Lisp packages of other related networking
+protocols.
+
+Lightweight Directory Access Protocol (LDAP) \cite{RFC:4510}
+is just another important
+protocol which is completely based on ASN.1. LDAP is widely used for
+management in large busyness and there're many ``directory server''
+productions. Currently the LDAP support in Common Lisp is still in its
+early stage, only a few of small packages being developed. A new LDAP
+package based on ASN.1 package is on the plan list of
+\textsc{cl-net-snmp} project.
+
+Intelligent Platform Management Interface (IPMI) \footnote{
+\texttt{http://www.intel.com/design/servers/ipmi/}} is also
+another network management protocol beside SNMP. It's a UDP-based
+protocol which is slightly easier than SNMP and usually implemented
+directly by server hardware. Through IPMI, system administrators can
+power off a remote server, query its hardware log, or logging to the
+server console through the Serial-On-LAN (SOL) interface. An IPMI
+package based on existing portable UDP networking package is in
+progress.
+
+\acks
+
+This project is part of a research project on network management platform
+which supported by NetEase.com, Inc.
+
+Thanks will go to the following Common Lisp packages and
+implementations which are depended on by \textsc{cl-net-snmp} project
+and their major author:
+%
+\begin{itemize}
+\item \textsc{sysman} Project (Simon Leinen),
+\item \textsc{usocket} Project (Erik Huelsmann),
+\item GBBopen Project\footnote{\texttt{http://gbbopen.org}} (Daniel D. Corkill),
+\item \textsc{ironclad} Project (Nathan Froyd),
+\item LispWorks\footnote{\texttt{http://www.lispworks.com}}.
+\end{itemize}
+
+Special thanks to Mathematical Systems Inc. (MSI) \footnote{
+\texttt{http://www.msi.co.jp}} for the adoption of
+\textsc{cl-net-snmp} in their enterprise projects,
+with bugfix and new feature suggestion.
+
+\bibliographystyle{plainnat}
+
+\begin{thebibliography}{10}
+
+\bibitem[J. Schonwalder (2002)]{Schonwalder2002}
+J.~Schonwalder.
+\newblock \textsl{Evolution of Open Source SNMP Tools.}
+\newblock In Proc. SANE 2002 Conference, April 29 2002.
+
+\bibitem[W. Yeong (1990)]{SNMPql}
+W. Yeong.
+\newblock \textsl{SNMP Query Language.}
+\newblock Technical Report 90-03-31-1, Performance Systems International, March 1990.
+
+\bibitem{Book:ASN.1}
+O.~Dubuisson.
+\newblock \textsl{ASN.1---Communication between heterogeneous systems.}
+\newblock Morgan Kaufmann, 2000.
+
+\bibitem{ISO:ASN.1}
+\textsl{Abstract Syntax Notation One (ASN.1) Specification of Basic
+  Notation.}
+\newblock {ITU-T Rec. X.680 (2002) | ISO/IEC 8824-1:2002}.
+
+\bibitem{ISO:BER}
+\textsl{ASN.1 encoding rules: Specification of Basic Encoding Rules
+  (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules
+  (DER).}
+\newblock {ITU-T Rec. X.690 (2002) | ISO/IEC 8825-1:2002}.
+
+\bibitem{Jacobson:RTT}
+V.~Jacobson.
+\newblock \textsl{Congestion avoidance and control.}
+\newblock In Proceedings of SIGCOMM '88, 1988.
+
+%\bibitem{Symbolics:Patch}
+%Symbolics.
+%\newblock {\em Program Development Utilities}, chapter Patch Facility, page~65.
+%\newblock Symbolics, Inc., 1986.
+
+\bibitem{RFC:768}
+J.~Postel.
+\newblock \textsl{User Datagram Protocol.}
+\newblock RFC 768, 28 August 1980.
+
+\bibitem{RFC:1157}
+J.~Case, M.~Fedor, M.~Schoffstall and J.~Davin.
+\newblock \textsl{A Simple Network Management Protocol (SNMP).}
+\newblock RFC 1157, May 1990.
+
+\bibitem{RFC:1901}
+J.~Case, K.~McCloghrie, M.~Rose, and S.~Waldbusser.
+\newblock \textsl{Introduction to Community-based SNMPv2.}
+\newblock RFC 1901, January 1996.
+
+\bibitem{RFC:2578}
+K.~McCloghrie, D.~Perkins, J.~Schonwalder, et al.
+\newblock \textsl{Structure of Management Information Version 2 (SMIv2).}
+\newblock RFC 2578, April 1999.
+
+\bibitem{RFC:2579}
+K.~McCloghrie, D.~Perkins, J.~Schonwalder, et al.
+\newblock \textsl{Textual Conventions for SMIv2}.
+\newblock RFC 2579, April 1999.
+
+\bibitem{RFC:3411}
+D.~Harrington, R.~Presuhn and B.~Wijnen.
+\newblock \textsl{An Architecture for Describing
+	Simple Network Management Protocol (SNMP) Management Frameworks}.
+\newblock RFC 3411, December 2002.
+
+\bibitem{RFC:3412}
+J.~Case, D.~Harrington, R.~Presuhn and B.~Wijnen.
+\newblock \textsl{Message Processing and Dispatching for the
+               Simple Network Management Protocol (SNMP)}
+\newblock RFC 3412, December 2002.
+
+\bibitem{RFC:3414}
+U.~Blumenthal and B.~Wijnen.
+\newblock \textsl{User-based Security Model (USM) for version 3 of the
+              Simple Network Management Protocol (SNMPv3)}.
+\newblock RFC 3414, December 2002.
+
+\bibitem{RFC:3415}
+B.~Wijnen, R.~Presuhn, and K.~McCloghrie.
+\newblock \textsl{View-based Access Control Model (VACM) for the
+  Simple Network Management Protocol (SNMP).}
+\newblock RFC 3415, December 2002.
+
+\bibitem{RFC:3416}
+R.~Presuhn, J.~Case, K.~McCloghrie, M~.Rose and S.~Waldbusser.
+\newblock \textsl{Version 2 of the Protocol Operations for
+             the Simple Network Management Protocol (SNMP)}.
+\newblock RFC 3416, December 2002.
+
+\bibitem{RFC:3418}
+R.~Presuhn, J.~Case, K.~McCloghrie, M.~Rose, and S.~Waldbusser.
+\newblock \textsl{Management Information Base (MIB) for the Simple
+  Network Management Protocol (SNMP).}
+\newblock RFC 3418, December 2002.
+
+\bibitem{RFC:4510}
+K.~Zeilenga,~Ed.
+\newblock \textsl{Lightweight Directory Access Protocol (LDAP):
+                    Technical Specification Road Map}
+\newblock RFC 4510, June 2006.
+
+\end{thebibliography}
+
+\end{document}
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
+@
+
+
+1.7
+log
+@Final paper
+@
+text
+@d2 1
+a2 1
+% $Id: snmp.tex,v 1.6 2009/02/10 11:51:19 binghe Exp binghe $
+d57 1
+a57 1
+\documentclass[natbib,9pt]{sigplanconf}
+d63 2
+a64 3
+\conferenceinfo{International Lisp Conference, 2009}
+{March 22-25, 2009, Cambridge, Massachusetts, USA.}
+\copyrightyear{2009} 
+d66 1
+d418 1
+a418 1
+not express way as those in earlier SNMP protocol versions.
+d424 2
+a425 2
+\item \texttt{(user "readonly")} (security name is ``readonly'')
+\item \texttt{(auth (:md5 "ABCDEFGHABCDEFGH"))} (authenticate protocol
+d1601 2
+a1602 1
+\newblock \textsl{Message Processing and Dispatching for the               Simple Network Management Protocol (SNMP)}
+d1607 2
+a1608 1
+\newblock \textsl{User-based Security Model (USM) for version 3 of the              Simple Network Management Protocol (SNMPv3)}.
+d1619 2
+a1620 1
+\newblock \textsl{Version 2 of the Protocol Operations for             the Simple Network Management Protocol (SNMP)}.
+d1631 2
+a1632 1
+\newblock \textsl{Lightweight Directory Access Protocol (LDAP):                    Technical Specification Road Map}
+@
+
+
+1.6
+log
+@rework
+@
+text
+@d2 1
+a2 1
+% $Id: snmp.tex,v 1.5 2009/02/04 15:24:42 binghe Exp binghe $
+d56 2
+a57 2
+\documentclass[preprint,nocopyrightspace,natbib,9pt]{sigplanconf}
+%\documentclass[nocopyrightspace,natbib,9pt]{sigplanconf}
+d68 2
+d141 7
+a147 4
+called the Structure of Management Information (SMI), which is a subset
+of Abstract Syntax Notation One (ASN.1). Data definitions written
+in the SMI are called Management Information Base (MIB). Third, SNMP has
+minimum resource requirements. By using User Datagram Protocol (UDP),
+d151 3
+a153 2
+SNMP has three major versions: \textsl{SNMPv1}, \textsl{SNMPv2c} and
+\textsl{SNMPv3}. The differences between \textsl{SNMPv1} and
+d165 5
+a169 3
+system. ASN.1 data is just abstract concepts, it need to be translated
+into bytes data and back, which generally called encoding/decoding.
+The encoding/decoding method chose by SNMP is the Basic Encoding Rule (BER),
+d189 2
+a190 1
+the language itself. J. Schonwalder wrote a good summary \cite{Schonwalder2002}
+d194 1
+a194 1
+haven't been carefully studied before. There're many similarities between
+d203 2
+a204 1
+design of ``GetNextRequestPDU'', it's just like the Common Lisp function
+d218 2
+a219 2
+one is a FFI wrapper to \textsl{Net-SNMP} library, and the other works
+by capturing outputs of \textsl{Net-SNMP}'s common-line utilities.
+d298 1
+a298 1
+All SNMP PDUs are supported. When a session is opened, functions which
+d332 2
+a333 2
+The string ``sysDescr.0'' here will be translated to a
+ASN.1 OID instance. When SNMP client operated on
+d381 2
+d391 1
+a391 1
+\item \texttt{user}: A \textsl{string} as SNMP security name.
+d446 112
+a563 1
+
+a567 1
+
+d571 1
+a571 1
+control\footnote{The access control protocol used by SNMP is called View-based Access Control Model (VACM), see RFC 3415.}
+a573 1
+
+a581 1
+
+d583 1
+a583 1
+use command-line utilities from \textsl{Net-SNMP} project:
+a591 1
+
+a615 1
+
+a624 1
+
+a626 1
+%
+a633 1
+
+d635 1
+a635 2
+by \textsl{Net-SNMP} utilities, the query to ``sysDescr.0'' may shows:
+%
+a642 1
+
+d653 1
+a653 2
+returned.\footnote{This variable has't been really used by current version of
+  SNMP-Server package.}
+d734 1
+a734 1
+At compile-time, above definitions then will be translated into something like:
+d736 20
+a755 12
+(DEFVAR |lispFeatureName|
+  (MAKE-INSTANCE 'OBJECT-ID
+    :NAME (SYMBOL-NAME '|lispFeatureName|)
+    :VALUE 2
+    :PARENT |lispFeatureEntry| 
+    :MODULE *CURRENT-MODULE*
+    :TYPE 'OBJECT-TYPE
+    :SYNTAX '|DisplayString|
+    :MAX-ACCESS '|read-only|
+    :STATUS '|current|
+    :DESCRIPTION
+    "The string name of each element in *features*."))
+d767 2
+a768 1
+  (DEFUN ASN.1::|sysDescr| (AGENT &OPTIONAL #:G139443)
+d770 1
+a770 1
+    (IF (NULL #:G139443)
+d778 3
+a780 2
+    (REGISTER-VARIABLE (OID "sysDescr")
+                       #'ASN.1::|sysDescr|)))
+d816 3
+a818 1
+A new enterprise number from IANA has been registered: \textbf{31609 (lisp)},
+d838 2
+a839 2
+The framework of LISP-MIB\footnote{The actual ASN.1 definition of
+  LISP-MIB and other LISP-*-MIBs can be found in \textsc{cl-net-snmp}'s
+d841 2
+a842 2
+  \texttt{https://cl-net-snmp.svn.sourceforge.net/svnroot/cl-net\-snmp/snmp/trunk/asn1/lisp}} is shown in Figure
+\ref{fig:lisp-mib}.
+d897 1
+a897 1
+\subsection{History of cl-net-snmp Project}
+d899 91
+a989 87
+The \textsc{cl-net-snmp} project started from March 2007. Its first
+several versions are CFFI-based API wrappers on \textsl{Net-SNMP} as
+its name (\textsc{cl-\textbf{net-snmp}}) indicates. There're some restrictions
+when based on \textsl{Net-SNMP}. To support MIB, the corresponding
+MIB definition files must be shipped, so it's impossible to deliver a
+single Lisp image to hold all things together. Soon after the
+``0.1.0'' release on April 8, 2007, the author turned to pure-lisp
+implementation which support the OID name resolution.
+
+On September 28, 2007, the \textsc{cl-net-snmp} 1.0 was released,
+which support client protocol of SNMPv1 and SNMPv2c. In this version,
+a LALR parser called ZEBU\footnote{\texttt{http://www.cliki.net/Zebu}}
+was used to parse MIB files, but only
+OID definitions are actually processed. In this version all OID information
+are read into a single list called ``MIB tree''.
+The correspond tree maintenance API and tree structure are learnt from Simon
+Leinen's \textsc{sysman} project.
+
+In \textsc{sysman}, MIB definition files are first translated
+into a plain text format by a script outside Lisp, then easily loaded by Lisp
+to build the MIB tree. So there's no ASN.1 parsing work in \textsc{sysman}.
+
+Different from \textsc{sysman}, \textsc{cl-net-snmp} tries to
+implement the SNMP protocol in a ``nature Lisp way'', even more
+naturally than the C-based \textsl{Net-SNMP} project. ZEBU is hard to use
+for parsing ASN.1, partly because of its built-in
+regex-based lexer, which cannot be used to read multi-line strings
+(just like the Lisp strings).
+
+Starting from version 1.2, a simple ``ASN.1 compiler'' had been introduced
+to compile MIB definition file directly into Common Lisp source code.
+ASN.1 syntax is very hard to parse, especially when it contains obsolete
+\texttt{MACRO} definitions. And there're many ambiguities when parsing
+ASN.1 by LALR(1). For a detailed discussion on the difficulty
+of parsing ASN.1, see chapter 22.3 in O. Dubuisson's ASN.1 Book \cite{Book:ASN.1}.
+
+The ASN.1 parser defined in \textsc{cl-net-snmp} is based on
+LispWorks' \textsc{parsergen} package. It still needed
+a lexer to work together. Due to the similarity between ASN.1 token and
+Lisp token, the author found that just use a modified CL readtable
+will be fit all the need. Hacking on CL readtables is a bit crazy but it does work
+and it's very fast. Since then, the ASN.1 part of code had been separated from
+SNMP package to make a new standalone ASN.1 package. The new ASN.1
+package has two parts, one is the runtime, which runs on all
+support CL implementations and is depended by the main SNMP package;
+the other part, a compiler, which only works on LispWorks, and is only
+needed when people want to load new MIB files which isn't shipped with the SNMP
+package.
+
+More than half a year later, on Jul 13, 2008, the long-awaited
+\textsc{cl-net-snmp} 2.0 was out. All above ideas were well
+implemented. Starting from that release, the project has been divided
+into several sub-projects and each of them has its own version
+numbers. The author tried to manage the version policy as softwares on old
+Symbolics Lisp machine \cite{Symbolics:Patch}: each software has a major version
+number and a minor version number; if the software can be updated by
+loadable lisp patch, only minor version is increased, and if the
+structure of lisp code is changed much or any refactoring happens, the
+major version must be increased to start a fresh new version. One such
+example is the \textsl{CL-HTTP}\footnote{\texttt{http://www.cl-http.org:8001}}
+project. At a early stage, it's hard to keep source code stable, so after
+fixed some bugs the version 3.0 just been released on Jul 21, 2008, which is
+the first public release of new design.  Following features are supported at that time:
+\begin{itemize}
+\item Full SNMP protocol version support (\textsl{SNMPv1}, \textsl{SNMPv2c}, \textsl{SNMPv3}).
+\item Support MIB and ASN.1 OID names.
+\item Fast BER encode/decode based on CLOS.
+\item UDP auto-retransmit support.
+\item Simple SNMP Server on LispWorks.
+\end{itemize}
+The simple SNMP server is a very early support on server side
+SNMP: no \textsl{SNMPv3}, no access control (VACM), even ``SNMP walk''
+is not supported yet. All that use can do on client side is to \textsl{get}
+values of MIB variables.
+
+The next big step is the 5.0 release on Sep 8, 2008. Start from this version,
+the SNMP server can run on every support CLs. It's based on
+\textsc{usocket}\footnote{\texttt{http://common-lisp.net/project/usocket}}
+project and portable-threads package from
+\textsl{GBBopen}\footnote{\texttt{http://gbbopen.org}}
+project. \textsc{cl-net-snmp} 5.5, released on Sep 24, 2008, adds full
+``SNMP walk'' support for the SNMP server, and start from this
+version, a LISP-MIB has been defined to standardize the server-side
+variables in SNMP server, but the server side is still lacking in VACM
+support. \textsc{cl-net-snmp} 5.19 is the latest release when writing
+this paper. It fixed many bugs, and its API is explained in this
+paper.
+d1019 2
+a1020 1
+An \textsc{usocket-udp} sub-project has been written for the SNMP package,
+d1031 1
+a1031 1
+it is used by \textsl{Net-SNMP} project: define a maximum retry time
+d1034 1
+a1034 1
+approach \cite{Jacobson:RTT} which used by TCP networking: the
+d1041 1
+a1041 1
+\subsection{ASN.1}
+d1056 2
+a1057 1
+to Common Lisp sequences, which include two subtype: vector and list.
+d1059 12
+a1070 9
+mapped into \texttt{\#()}, a empty vector, but \texttt{NIL}, a empty
+list. That's because \texttt{NIL} is mapped into ASN.1 \texttt{NULL}
+type, which is also the only valid element of this type.
+
+There're other ASN.1 primitive data like strings and integers which
+are needed by SNMP and mapped into Common Lisp types by the ASN.1
+package.  Table \ref{table:asn.1-type-mapping} is a table of type
+mapping which the ASN.1 package currently supports. Most ASN.1 types
+defined in ASN.1 package are CLOS classes.
+d1095 5
+a1099 2
+ASN.1 support in SNMP implementation may have two parts: one is
+necessary for SNMP, and the other is not but also very important.
+d1103 11
+a1113 6
+The BER (Basic Encoding Rule) \cite{ISO:BER} support on ASN.1 data is
+essential for implementing SNMP because BER is the connection between
+ASN.1 data and SNMP raw packets. BER encodes ASN.1 primitive data into
+three parts: type, length and value (TLV). The corresponding API of
+BER in ASN.1 package is \texttt{ASN.1:BER-ENCODE} and
+\texttt{ASN.1:BER-DECODE}. For example, an integer 10000 can be
+d1116 2
+a1117 2
+two bytes is its actual data, and 39 and 16 mean the actual value
+($39*256+16=10000$):
+d1146 2
+a1147 2
+\texttt{\#(4 3 97 98 99)} (string ``abc''), and \texttt{\#(5 0)}
+(Null).
+d1198 4
+a1201 4
+difference from other existing BER engines in Common Lisp which can be
+found in \textsl{Lisp-SNMP} and \textsl{trivial-ldap}.  The first
+value returned by \texttt{ASN.1:BER-DECODE-TYPE} comes from a
+hash-table \texttt{ASN.1::*BER-DISPATCH-TABLE*}, and all ASN.1 types
+a1212 25
+An SNMP message in all is actually an ASN.1 \texttt{SEQUENCE}, for
+example, the SNMPv2c message format is defined in \textsl{RFC 1901}
+\cite{RFC:1901} by the following definition:
+%
+\begin{verbatim}
+Message ::=
+  SEQUENCE {
+    version
+      INTEGER {
+        version(1)  -- modified from RFC 1157
+      },
+      community           -- community name
+        OCTET STRING,
+      data                -- PDUs as defined in [4]
+        ANY
+  }
+\end{verbatim}
+
+Above definition shows that the SNMPv2c message is an ASN.1
+\texttt{SEQUENCE} which contains three parts: the SNMP version as an
+\texttt{INTEGER}, the SNMPv2c community as an \texttt{OCTET STRING},
+and the message data is actually type of SNMP PDU, which has several
+different sub-types. Once a full-power BER engine is made, the
+encode/decode of SNMP messages would be quite easy.
+
+d1215 10
+a1224 14
+The \texttt{OBJECT IDENTIFIER} (OID) is the most important ASN.1 type.
+The structure of OID instances and storage method of OID tree consist
+the biggest differences of each ASN.1 library/package. Most ASN.1
+implementations' OID types store full OID numbers list in each OID
+instance. For example, in \textsl{Net-SNMP}, the OID type is just
+mapped to C array of \texttt{unsigned long} or \texttt{unsigned char}.
+Other high-level SNMP libraries usually define OID as a class, which
+has an OID number list as a slot (member variable). For example, the
+OID instance ``sysDescr.0'' (1.3.6.1.2.1.1.1.0) has the OID number
+list \texttt{\#(1 3 6 1 2 1 1 1 0)}. The whole array may be stored
+into OID instance.
+
+In \textsc{cl-net-snmp}'s ASN.1 package, the \texttt{OBJECT-ID} class
+doesn't hold full OID number list but only the last one. To construct
+d1226 2
+a1227 3
+the ``parent'' OID instance of current OID instance. The currrent
+definition of the class \texttt{OBJECT-ID} is shown in figure
+\ref{defclass:object-id}.
+a1230 4
+;;;; from #p"ASN1:RUNTIME;OBJECT-ID.LISP"
+
+(in-package :asn.1)
+
+d1232 1
+a1232 1
+  ((name        :type string
+d1263 2
+a1264 2
+\end{verbatim}  
+  \caption{The definition of \texttt{ASN.1:OBJECT-ID}}
+d1268 2
+a1269 6
+The only useful slots of class \texttt{OBJECT-ID} at current are
+\texttt{NAME}, \texttt{VALUE}, \texttt{PARENT} and
+\texttt{CHILDREN}. The \texttt{NAME} slot is unnecessary, only used by
+named OID instances. Other slots are used to build the OID tree which
+should include all OID instances in current lisp image.
+
+d1272 2
+a1273 1
+(1.3.6.1.2.1.1.1.0) may be accessed through following ways:
+d1275 19
+a1293 16
+\begin{verbatim}
+> (asn.1:oid "sysDescr.0")
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+
+> (asn.1:oid "1.3.6.1.2.1.1.1.0")
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+
+> (asn.1:oid #(1 3 6 1 2 1 1 1 0))
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+
+> (asn.1:oid '(1 3 6 1 2 1 1 1 0))
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+
+> (asn.1:oid (list (asn.1:oid "sysDescr") 0))
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+\end{verbatim}
+d1296 2
+a1297 8
+auto-generated from its ASN.1 definitions. Almost all MIB files are
+shipped with net-snmp and are provided by the SNMP package. A simple
+ASN.1 ``compiler'' is used to compile these ASN.1-format MIB files
+into Lisp source files. The ASN.1 ``compiler'' is still at its early
+stage, which is currently used only to translate OID assignments into
+Lisp variable definitions.  For example, the ``sysDescr'' MIB node as
+a OID instance is stored into Lisp variable
+\texttt{ASN.1::|sysDescr|}:
+d1299 4
+d1304 1
+a1304 1
+> asn.1::|sysDescr|
+a1306 1
+
+d1322 1
+a1322 1
+    \texttt{name} & \texttt{"sysDescr"}\\
+d1351 3
+a1353 3
+As readers may see, the slot \texttt{parent} of
+\texttt{ASN.1::|sysDescr|} is another OID instance, which is stored in
+\texttt{ASN.1::|system|}:
+d1356 1
+a1356 1
+> (asn.1:oid-parent asn.1::|sysDescr|)
+d1359 1
+a1359 1
+> asn.1::|system|
+d1365 1
+a1365 1
+> (asn.1:oid-name-list asn.1::|system|)
+d1369 1
+a1369 1
+> (asn.1:oid-number-list asn.1::|system|)
+d1373 11
+a1383 14
+Actually all ``named'' OID instances (like ``sysDescr'') have
+``named'' OID instances as their parent or children which can be
+accessed from their corresponding slots; all of them are stored in one
+``MIB tree''.  OID instances which doesn't have a name (like
+``sysDescr.0'') are created by \texttt{ASN.1:OID} function temporary
+and only \texttt{parent} slot are useful for them to produce the full
+OID number list which used by SNMP operations.
+
+The ``root'' node of the MIB tree is stored in Lisp variable
+\texttt{ASN.1::*ROOT-OBJECT-ID*}, which is the entry point of all
+named MIB nodes.  Its unique non-\texttt{NIL} slot is the slot
+\texttt{children}, which have two elements, one of which is just the
+famous node ``iso'', which has almost all valid OID instances as its
+(indirect) children:
+d1387 3
+a1389 2
+#<ASN.1:OBJECT-ID .>
+> (asn.1::list-children asn.1::*root-object-id*)
+d1391 1
+a1391 1
+ #<ASN.1:OBJECT-ID zero (0) [1]>)
+d1394 1
+a1394 5
+The MIB design in ASN.1 package has been revised several times, and
+it's still unstable at current stage. There are many interesting
+details here but discussing all of them is out of scope of this paper.
+
+\subsection{SNMP}
+d1397 1
+a1397 1
+DES, MD5 and SHA1 algorithms. This is done by Nathan Froyd's IRONCLAD%
+d1402 50
+d1454 14
+a1467 1
+\subsection{ASN.1 and SNMP}
+d1469 1
+a1469 78
+There's still a lot of work to do. Currently the biggest issue in
+ASN.1 package is that different MIB nodes with the same name cannot be
+stored correctly, because all MIB variables are defined in package
+``ASN.1''. To solve this problem, the ASN.1 to Lisp language mapping
+needs to be revised to support mapping ASN.1 ``module'' directly into
+Lisp packages, with slightly name changes (i.e. module name
+``SNMPv2-MIB'' may change to Lisp package name ``ASN.1/SNMPv2-MIB''
+for clarity). This is a big change, and more packages will be created
+in Lisp image. To make sure a MIB node could be referred correctly
+from other ASN.1 module packages, the ASN.1 definitions should be
+written very strictly: the \texttt{IMPORT} section in module
+definitions will be translated into \texttt{IMPORT-FROM} in Lisp
+package definitions. And to make sure the unmodified MIB files from
+net-snmp can still be processed correctly, a set of ``famous'' MIB
+nodes may be imported implicitly.
+
+Another big piece of work happens in ASN.1 compiler. Currently the
+\texttt{type} slot of \texttt{OBJECT-ID} class is not used because the
+only value is \texttt{T}, but this type information is needed by SNMP
+package. The ASN.1 compiler needs to be enhanced to support
+compilation on type definitions.  For example, the ``Mac\-Address''
+type was defined by SNMPv2-TC:
+\begin{verbatim}
+MacAddress ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1x:"
+    STATUS       current
+    DESCRIPTION
+            "..."
+    SYNTAX       OCTET STRING (SIZE (6))
+\end{verbatim}
+As a SNMP ``textual convention'', above type definitions may be
+compiled into a Common Lisp \texttt{deftype}:
+\begin{verbatim}
+(deftype |MacAddress| ()
+  "..."
+  `(string 6))
+\end{verbatim}
+An ASN.1 type definition should be translated into CLOS class
+definitions. For example, the MIB table entry ``IfTestEntry''
+\begin{verbatim}
+IfTestEntry ::=
+    SEQUENCE {
+        ifTestId           TestAndIncr,
+        ifTestStatus       INTEGER,
+        ifTestType         AutonomousType,
+        ifTestResult       INTEGER,
+        ifTestCode         OBJECT IDENTIFIER,
+        ifTestOwner        OwnerString
+    }
+\end{verbatim}
+may be compiled into following CLOS \texttt{defclass} form:
+%
+\begin{verbatim}
+(defclass |IfTestEntry| ()
+  ((|ifTestId|     :type |TestAndIncr|)
+   (|ifTestStatus| :type integer)
+   (|ifTestType|   :type |AutonomousType|)
+   (|ifTestResult| :type integer)
+   (|ifTestCode|   :type object-id)
+   (|ifTestOwner|  :type |OwnerString|)))
+\end{verbatim}
+
+This translation will be used by high-level SNMP operations.  Maybe
+there will be a special version of ``SNMP Walk'' which returns array
+of CLOS instances instead of lists, and users can query remote SNMP
+tables using SQL-like or LDAP-like syntax. All of them depends on
+better ASN.1 package.
+
+The SNMP package also needs more work. Currently the only way to do
+multiple SNMP query at the same time is to use multi-threads which
+opening multiple SNMP sessions and sockets.  It's possible to query
+multiple remote SNMP peers at the same time, using only one socket and
+work in one thread, just like the function
+\texttt{snmp\_synch\_response()} in \textsl{Net-SNMP}. This facility
+is important for enterprise users, and must be supported in future
+versions.
+
+On the server side of SNMP package, the VACM (View-based Access
+d1471 1
+a1471 2
+list. \textsl{RFC 3415} will be implemented in future versions of SNMP
+package.
+d1473 8
+a1480 1
+\subsection{Other Related Projects}
+d1487 2
+a1488 1
+Lightweight Directory Access Protocol (LDAP) is just another important
+d1496 2
+a1497 1
+Intelligent Platform Management Interface (IPMI) \cite{IPMI} is also
+a1505 5
+%\appendix
+%\section{Appendix Title}
+%
+%This is the text of the appendix, if you need one.
+
+d1508 2
+a1509 4
+This project is based in part upon work supported by my employer, the
+NetEase.com, Inc.
+
+Lisp-SNMP ...
+d1513 1
+a1513 1
+and their major author/maintainer:
+d1516 5
+a1520 4
+\item LispWorks (Dave Fox \& Martin Simmons)
+\item \textsc{usocket} Project (Erik Huelsmann)
+\item GBBopen's PortableThreads (Daniel D. Corkill)
+\item IRONCLAD Project (Nathan Froyd)
+d1523 5
+d1534 1
+a1534 1
+\newblock Evolution of Open Source SNMP Tools.
+d1539 1
+a1539 1
+\newblock SNMP Query Language.
+a1541 4
+\bibitem{RFC:1901}
+J.~Case, K.~McCloghrie, M.~Rose, and S.~Waldbusser.
+\newblock {\textit{RFC 1901: Introduction to Community-based SNMPv2}}.
+
+d1544 1
+a1544 1
+\newblock {\em {ASN.1 - Communication between heterogeneous systems}}.
+a1546 5
+\bibitem{IPMI}
+{Intel and others}.
+\newblock {\textit{Intelligent Platform Management Interface},
+  \texttt{http://www.intel.com/design/servers/ipmi/}}.
+
+d1548 3
+a1550 3
+{ITU-T Rec. X.680 (2002) | ISO/IEC 8824-1:2002}.
+\newblock {\textit{Abstract Syntax Notation One (ASN.1) Specification of Basic
+  Notation}}.
+d1553 1
+a1553 2
+{ITU-T Rec. X.690 (2002) | ISO/IEC 8825-1:2002}.
+\newblock {\textit{ASN.1 encoding rules: Specification of Basic Encoding Rules
+d1555 2
+a1556 1
+  (DER)}}.
+d1560 2
+a1561 2
+\newblock Congestion avoidance and control.
+\newblock In {\em Proceedings of SIGCOMM '88}, 1988.
+d1563 14
+a1576 9
+\bibitem{Project:ZEBU}
+J.~Laubsch.
+\newblock {\textit{ZEBU: A Tool for Specifying Reversible LALR(1) Parsers}},
+  January 1999.
+
+\bibitem{Project:SYSMAN}
+S.~Leinen.
+\newblock {\textit{SYSMAN: A System Management Substrate for Common Lisp},
+  \texttt{http://www.switch.ch/misc/leinen/snmp/sysman.html}}, 1998.
+d1578 4
+a1581 4
+\bibitem{RFC:3418}
+R.~Presuhn, J.~Case, K.~McCloghrie, M.~Rose, and S.~Waldbusser.
+\newblock {\textit{RFC 3418: Management Information Base (MIB) for the Simple
+  Network Management Protocol (SNMP)}}, December 2002.
+d1583 25
+a1607 4
+\bibitem{Symbolics:Patch}
+Symbolics.
+\newblock {\em Program Development Utilities}, chapter Patch Facility, page~65.
+\newblock Symbolics, Inc., 1986.
+d1611 19
+a1629 2
+\newblock {\textit{RFC 3415: View-based Access Control Model (VACM) for the
+  Simple Network Management Protocol (SNMP)}}, December 2002.
+@
+
+
+1.5
+log
+@Add comments from ILC, and do trivial fixes first.
+@
+text
+@d1 1514
+a1514 1522
+%!TEX encoding = UTF-8 Unicode
+% $Id: snmp.tex,v 1.4 2008/12/07 02:49:20 binghe Exp binghe $
+
+% ILC '09 Paper by Chun Tian (binghe)
+
+%%% Comments:
+
+% Nice to see a detailed application of Lisp to networking/services.  A
+% bit heavy on the operational detail - would have been good to see more
+% on the design side (constraints, choices, rationales) - but otherwise
+% a useful contribution.
+
+% ---
+
+% This project covers some very important issues for the future of
+% Common Lisp, but unfortunately the paper is rather badly written.  There
+% are good aspects of the presentation, but so many bad ones that the
+% author should seek out the help of a Lisp-literate person who has never
+% heard of ASN.1, MIB, and may other terms (which he uses for several pages
+% before providing even an informal definition, or providing enough context
+% for a more Net-naive reader to grasp the essence.
+
+% I strongly suggest a second review after the author has had time to grok
+% the enormity of the disconnect of his presentation style with the ability
+% to hold the attention of an audience  that is not a SNMP geek.
+
+% ---
+
+% very dense about a particular topic, Simple Network Management
+% Protocol, with more detail than I care to read.  But it seems well
+% written, and evidently there's a big user community, so it a paper
+% with narrow appeal is appropriate
+
+% Typos and grammatical errors abound (several to a dozen per page.)  e.g. :
+
+% Page 1.,
+% First, rewrite the two paragraphs beginning "As a Linux System
+% administrator ..." and "About two years later .." but remove all first-
+
+% person references and viewpoints (i.e., the pronoun "I")  There is a good
+% problem to be stated here, and the author is allowed to offer a solution;
+% but it should not be merely  an informal, first-person story.
+% * 	The sentence beginning "It's a pure lisp implementation ..." should
+%   rewritten the remainder to be more like this "... but is not being
+%   maintained, and doesn't support the new protocol SNMPv3."
+% * 	".. SYSMAN under active developments"  ->  " ... SYSMAN was under
+%   active development."
+% * 	"... SNMP package supports the following Common LIsp ..."  ->
+%   "... SNMP package runs on the following Common LIsp ..."
+% Page 3, footnote "The actually ...) -> "The actual ..."
+% . . .
+
+% Other help with English diction may be necessary.
+
+\documentclass[preprint,nocopyrightspace,natbib,9pt]{sigplanconf}
+%\documentclass[nocopyrightspace,natbib,9pt]{sigplanconf}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\conferenceinfo{ILC '09}{March 22-25, 2009, Cambridge, Massachusetts, USA.}
+\copyrightyear{2009} 
+\copyrightdata{}
+
+\titlebanner{DRAFT---Do not distribute}                 % These are ignored unless
+\preprintfooter{Chun Tian (binghe)'s paper for ILC '09} % 'preprint' option specified.
+
+\title{SNMP for Common Lisp}
+%\subtitle{An Introduction to the \textsc{cl-net-snmp} Project}
+
+\authorinfo{Chun Tian (binghe)}
+           {Hangzhou Research Center, P. R. China\\NetEase.com, Inc.}
+           {binghe.lisp@@gmail.com}
+
+\maketitle
+
+\begin{abstract}
+  The
+  \textbf{\textsc{cl-net-snmp}}\footnote{\texttt{http://common-lisp.net/project/cl-net-snmp}}
+  project has developed a new Common Lisp package which implemented
+  the Simple Network Management Protocol (SNMP). On client side, it
+  can be used to query remote SNMP peers, and on server side, it
+  brings SNMP capability into Common Lisp based applications, which could be
+  monitored from remote through any SNMP-based management
+  system. It's also a flexible platform for researches of system
+  administration.
+
+  Different from other SNMP packages on Common Lisp,
+  \textsl{\textsc{cl-net-snmp}} is clearly targeted on full SNMP
+  protocol support include \textsl{SNMPv3} and SNMP server. During
+  this development, an ASN.1 package and portable UDP networking
+  package are also implemented, which will be useful for other related
+  projects in the future.
+
+  In this paper, the author first introduces the usage of SNMP package
+  on both client and server sides, and then the Lisp-native design
+  idea and the implementation details of ASN.1 and SNMP package,
+  especially the ``code generation'' approach on mapping SNMP MIB from
+  ASN.1 to Common Lisp.
+\end{abstract}
+
+\category{C.2.2}{Computer-Communication Networks}{Network
+  Protocols}[Applications]
+\category{C.2.3}{Computer-Communication Networks}{Network
+  Operations}[Network monitoring]
+\category{C.2.6}{Computer-Communication
+  Networks}{Internetworking}[Standards]
+\category{D.2.12}{Software  Engineering}{Interoperability}[Interface
+definition languages]
+\category{D.3.4}{Programming Languages}{Processors}[Code generation]
+
+\terms
+Languages, Common Lisp, SNMP, ASN.1
+
+\keywords
+Lisp, SNMP
+
+\section{Introduction}
+
+Simple Network Management Protocol (SNMP) is the \textit{de facto}
+standard for network management and system administration. Using SNMP,
+people can monitor the status of remote UNIX servers and network
+equipment. It's been defined and well implemented since 1990s. The
+most successful implementation is the
+Net-SNMP\footnote{\texttt{http://www.net-snmp.org}} project, which is
+a C implementation with both client and server support and has a
+client-side Perl interface.
+
+There're many SNMP-related opensource and commercial software in the
+world. On \textsl{SourceForge.net}, there're almost 300 projects
+matching the keyword ``SNMP'', which can be classified into three
+types:
+\begin{itemize}
+\item SNMP library or extension for specific programming language.
+\item SNMP agent which acts as a standalone agent or agent extension.
+\item SNMP manager which is used for managing SNMP-enabled servers or
+  equipment, either GUI or Web-based.
+\end{itemize}
+
+From the view of programming languages, almost every in-use language
+has a well implemented SNMP library/package. For popular languages
+like Java, Python or C\#, there're often several similar projects
+existing in competition. And there's at least one language, Erlang,
+which ships full SNMP support (more than 60,000 lines of code) with
+the language itself.
+
+For Common Lisp, before 2007, only two SNMP projects have been in
+existence. Simon Leinen's \textsl{SYSMAN} \cite{Project:SYSMAN} is the
+first Lisp-SNMP solution which supports client side
+\textsl{SNMPv1}/\textsl{SNMPv2c} and server-side agent on
+\textsl{Symbolics Lisp Machine}. It's a pure-lisp implementation, but
+is not being maintained, and doesn't support the new protocol \textsl{SNMPv3}.
+During 2006, Larry Valkama wrote two SNMP client packages
+\cite{Project:Valkama}, none of which are pure-lisp implementation:
+one is a FFI wrapper to \textsl{Net-SNMP} library, and the other works
+by capturing command output of \textsl{Net-SNMP}'s common-line
+utilities.
+
+As a Linux system administrator of NetEase.com, I've never given up
+making a relationship between my most favourite language and daily
+work.  I started a research project early 2007, trying to build a new
+system administration platform which could easily monitor hundreds of
+remote UNIX servers through SNMP and control their power through IPMI
+\cite{IPMI} when necessary. I want to read ASN.1 files directly into
+Lisp image (which \textsl{SYSMAN} cannot do) and support full SNMP
+protocols especially the new \textsl{SNMPv3} which didn't exist at the
+time \textsl{SYSMAN} was under active developments. After reading the
+source code of \textsl{SYSMAN}, I thought it's impossible (or at least
+very hard) to achieve above two goals by simply enhancing
+\textsl{SYSMAN}, so a new SNMP package started.
+
+About two years later, after the core design has been changed three
+times, I got a new pure-lisp SNMP package with strong ASN.1 support.
+Now the SNMP package runs on the following Common Lisp
+implementations: CMUCL, SBCL, Clozure CL, LispWorks, Allegro CL and
+Scieneer CL; and runs under Linux, Solaris, Mac OS X and Windows.
+
+In following sections, I'll first introduce the SNMP package as a
+user, and then show the design idea and implementation details behind
+the express and convenient API.
+
+\section{Using SNMP Package}
+
+\subsection{Client-side SNMP}
+
+The client-side API of SNMP package is quite straight-forward. The
+central object which operated by almost all client functions is the
+``SNMP Session''. To query a remote SNMP peer, a session object should
+be created first.
+
+As SNMP protocol has three versions (\textsl{SNMPv1}, \textsl{SNMPv2c}
+and \textsl{SNMPv3}), correspondingly, we have three session classes:
+\texttt{V1-SESSION}, \texttt{V2C-SESSION} and \texttt{V3-SESSION}. The
+start point of client-side SNMP API is the function
+\texttt{SNMP:OPEN-SESSION}, which creates a new SNMP session:
+%
+\begin{verbatim}
+snmp:open-session (host &key port version community
+                             user auth priv)
+\end{verbatim}
+
+\subsubsection{SNMPv1 and SNMPv2c}
+
+To create a non-V3 SNMP session, only keywords \texttt{PORT},
+\texttt{VERSION} and \texttt{COMMUNITY} are needed. Suppose we have a
+remote SNMP server whose host name is \texttt{"binghe-debian.local"},
+which is running a net-snmp server on default port 161, its SNMP
+``community'' is \texttt{"public"}, and the SNMP protocol is
+\textsl{SNMPv2c}, then the following form will create a new session
+and assign it into variable \texttt{s1}:
+%
+\begin{verbatim}
+> (setf s1 (snmp:open-session "binghe-debian.local"
+                              :port 161
+                              :version :v2c
+                              :community "public"))
+#<SNMP::V2C-SESSION 223CF317>
+\end{verbatim}
+
+In current version of SNMP package, when a session is being created, a
+new socket will be opened at the same time. You can use
+\texttt{SNMP:CLOSE-SESSION} to close the session:
+%
+\begin{verbatim}
+snmp:close-session (session)
+\end{verbatim}
+
+All SNMP PDUs are supported. When a session is opened, functions which
+can be used on it are: \texttt{SNMP-GET}, \texttt{SNMP-GET-NEXT},
+\texttt{SNMP-WALK}, \texttt{SNMP-SET}, \texttt{SNMP-TRAP},
+\texttt{SNMP-INFORM} and \texttt{SNMP-BULK}. For example, the
+\texttt{SNMP-WALK} facility is very useful for debugging purpose when
+it's interactively used to retrieve a remote MIB table, say, the basic
+``system'' table (1.3.6.1.2.1.1):
+%
+\begin{verbatim}
+> (snmp:snmp-walk s1 "system")
+((#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+  "Linux binghe-debian.local 2.6.26-1-amd64 #1
+   SMP Thu Oct 9 14:16:53 UTC 2008 x86_64")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysObjectID.0>
+  #<ASN.1:OBJECT-ID
+    NET-SNMP-MIB::netSnmpAgentOIDs.10>)
+ (#<ASN.1:OBJECT-ID
+    DISMAN-EVENT-MIB::sysUpTimeInstance
+   (0) [0]>
+  #<ASN.1:TIMETICKS (1694778) 4:42:27.78>)
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysContact.0>
+  "Chun Tian (binghe) <binghe.lisp@@gmail.com>")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysName.0>
+  "binghe-debian.local")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysLocation.0>
+  "VMware Fusion")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysORLastChange.0>
+  #<ASN.1:TIMETICKS (14) 0:00:00.14>)
+ ...)
+\end{verbatim}
+
+Each element in the return list of \texttt{SNMP:SNMP-WALK} is form of
+\texttt{($\langle\mathrm{variable}\rangle$
+  $\langle\mathrm{data}\rangle$)}.
+
+For normal lisp applications, \texttt{SNMP:SNMP-GET} is the most
+useful function. Users can retrieve multiple variables in one query as
+the SNMP protocol supported:
+%
+\begin{verbatim}
+> (snmp:snmp-get s1 '("sysDescr.0" "sysName.0"))
+("Linux binghe-debian.local 2.6.26-1-amd64 #1
+  SMP Thu Oct 9 14:16:53 UTC 2008 x86_64"
+ "binghe-debian.local")
+\end{verbatim}
+%
+When only one variable is queried, \texttt{SNMP:SNMP-GET} can be used
+just like this:
+%
+\begin{verbatim}
+> (snmp:snmp-get s1 "sysName.0")
+"binghe-debian.local"
+\end{verbatim}
+
+The string ``sysDescr.0'' in these functions will be translated to a
+ASN.1 ``Object ID'' (OID) instance. When SNMP client operate on
+multiple servers, preparing all OID instances before query would
+increase the performance.  The function \texttt{ASN.1:OID} is used for
+this translation:
+%
+\begin{verbatim}
+> (asn.1:oid "sysName.0")
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysName.0>
+> (snmp:snmp-get s1 *)
+"binghe-debian.local"
+\end{verbatim}
+
+The \texttt{SNMP:WITH-OPEN-SESSION} macro can be used to establish a
+temporary session:
+\begin{verbatim}
+with-open-session ((session &rest args) &body body)
+\end{verbatim}
+Following is a sample query:
+\begin{verbatim}
+> (snmp:with-open-session (s "binghe-debian.local"
+                             :port 161
+                             :version :v2c
+                             :community "public")
+    (snmp:snmp-get s '("sysName.0")))
+("binghe-debian.local")
+\end{verbatim}
+Actually, SNMP port as 161, community as ``public'' and version as
+\textsl{SNMPv2c} are default settings, which have been held by three
+Lisp variables:
+%
+\begin{verbatim}
+(in-package :snmp)
+
+(defvar *default-snmp-version* +snmp-version-2c+)
+(defvar *default-snmp-port* 161)
+(defvar *default-snmp-community* "public")
+\end{verbatim}
+
+When being operated on default settings, the query syntax can be much
+simplified, a hostname string instead of SNMP session instance could
+be used:
+%
+\begin{verbatim}
+> (snmp:snmp-get "binghe-debian.local" "sysName.0")
+"binghe-debian.local"
+\end{verbatim}
+
+\subsubsection{SNMPv3}
+
+Opening an \textsl{SNMPv3} session needs more different keywords
+besides \texttt{HOST} and \texttt{PORT}:
+
+\begin{itemize}
+\item \texttt{VERSION}, possible values for \textsl{SNMPv3} are
+  \texttt{:V3}, \texttt{:VERSION-3} and
+  \texttt{SNMP:+SNMP-VERSION-3+}.
+
+\item \texttt{USER}: A \textsl{string} as SNMP security name.
+
+\item \texttt{AUTH}: Authenticate protocol and key, valid argument:
+  $\langle\mathrm{string}\rangle$,
+  \texttt{($\langle\mathrm{string}\rangle$
+    $\langle\mathrm{protocol}\rangle$)} or
+  \texttt{($\langle\mathrm{string}\rangle$
+    . $\langle\mathrm{protocol}\rangle$)}, which the
+  \texttt{$\langle\mathrm{protocol}\rangle$} can be \texttt{:MD5}
+  (default) or \texttt{:SHA1}.
+
+\item \texttt{PRIV}: Encryption/privacy protocol and key, valid
+  argument: $\langle\mathrm{string}\rangle$,
+  \texttt{($\langle\mathrm{string}\rangle$
+    $\langle\mathrm{protocol}\rangle$)} or
+  \texttt{($\langle\mathrm{string}\rangle$
+    . $\langle\mathrm{protocol}\rangle$)}, which the
+  \texttt{$\langle\mathrm{protocol}\rangle$} can only be \texttt{:DES}
+  at this time.
+\end{itemize}
+
+When both \texttt{AUTH} and \texttt{PRIV} are \texttt{NIL},
+\textsl{SNMPv3} operates at security level ``noAuthNoPriv''; when only
+\texttt{AUTH} is set up, the security level is ``authNoPriv''; and
+when both are set up, the strongest method ``authPriv'' is used. When
+\textsl{SNMPv3} is being used, all arguments must be set explicitly by
+\texttt{SNMP:OPEN-SESSION} or \texttt{SNMP:WITH-OPEN-SESSION}.
+
+For example, assume we have a remote SNMP peer which works through the
+following format:
+%
+\begin{itemize}
+\item \texttt{(USER "readonly")} (Security Name is ``readonly'')
+\item \texttt{(AUTH (:MD5 "ABCDEFGHABCDEFGH"))} (authenticate protocol
+  is MD5, followed by the authenticate key)
+\end{itemize}
+
+Then a quick query on ``sysDescr.0'' would be:
+\begin{verbatim}
+> (snmp:with-open-session
+      (s "binghe-debian.local"
+         :version :v3 :user "readonly"
+         :auth '(:md5 "ABCDEFGHABCDEFGH"))
+    (snmp:snmp-get s "sysDescr.0"))
+"Linux binghe-debian.local 2.6.26-1-amd64 #1
+ SMP Thu Oct 9 14:16:53 UTC 2008 x86_64"
+\end{verbatim}
+
+Here the \texttt{AUTH} argument \texttt{(:md5 "ABCDEFGHABCDEFGH")} can
+also use just \texttt{"ABCDEFGHABCDEFGH"} instead. That's because
+MD5\footnote{The actual authenticate protocol used by SNMP is
+  \textsl{HMAC-MD5-96} and \textsl{HMAC-SHA1-96}.} is the default
+authenticate protocol.
+
+\subsection{Server-side SNMP}
+
+Server-side SNMP facility is mainly used for Lisp image queried from
+remote.  The start point is to start and stop the SNMP server, this
+can be done by \texttt{SNMP:ENABLE-SNMP-SERVICE} and
+\texttt{SNMP:DISABLE-SNMP-SERVICE}:
+
+\begin{verbatim}
+> (snmp:enable-snmp-service)
+#<SNMP:SNMP-SERVER SNMP Server at 0.0.0.0:8161>
+\end{verbatim}
+
+Above function will open a new Lisp thread which acts as a SNMP
+server.  By default, the SNMP server listens on port 8161 and
+wild-cast (\texttt{0.0.0.0}) address. At current stage, no access
+control is implemented and only \textsl{SNMPv1/SNMPv2c} protocols are
+supported (they're the same from view of packet format). We can use
+SNMP client API to query it:
+
+\begin{verbatim}
+> (setf snmp:*default-snmp-port* 8161)
+8161
+
+> (snmp:snmp-get "localhost" "sysDescr.0")
+"LispWorks Personal Edition 5.1.1 on
+ binghe-mac.people.163.org"
+\end{verbatim}
+
+Here we changed the default SNMP port to make things easier. Or we can
+use command-line utilities from \textsl{Net-SNMP} project:
+
+\begin{verbatim}
+$ snmpget -v 2c -c public localhost:8161 sysDescr.0
+SNMPv2-MIB::sysDescr.0 = STRING: LispWorks Personal\
+ Edition 5.1.1 on binghe-mac.people.163.org
+\end{verbatim}
+
+We can also do a ``SNMP Walk'' on the server:
+
+\begin{verbatim}
+> (snmp:snmp-walk "localhost" "system")
+((#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+  "LispWorks Personal Edition 5.1.1 on
+   binghe-mac.people.163.org")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysObjectID.0>
+  #<ASN.1:OBJECT-ID
+    LISP-MIB::clNetSnmpAgentLispWorks (5) [0]>)
+ (#<ASN.1:OBJECT-ID
+    DISMAN-EVENT-MIB::sysUpTimeInstance.0>
+  #<ASN.1:TIMETICKS (69652) 0:11:36.52>)
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysContact.0>
+  "Chun Tian (binghe) <binghe.lisp@@gmail.com>")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysName.0>
+  "binghe-mac.local (binghe-mac)")
+ (#<ASN.1:OBJECT-ID SNMPv2-MIB::sysLocation.0>
+  "binghe-mac.people.163.org")
+ ...)
+\end{verbatim}
+
+An SNMP server is only useful when there is useful information in it.
+It's extensible: new SNMP variables or tables can be defined on the
+fly.  There're two high-level API macros which can be used to define
+new variables or tables: \texttt{SNMP:DEF-SCALAR-VARIABLE} and
+\texttt{SNMP:DEF-LISTY-MIB-TABLE}:
+
+\begin{verbatim}
+def-scalar-variable (name (agent) &body body)
+def-listy-mib-table (name (agent ids) &body body)
+\end{verbatim}
+And a low-level API function \texttt{SNMP:REGISTER-VARIABLE}:
+\begin{verbatim}
+register-variable (oid function &key dispatch-table
+                                walk-table walk-list)
+\end{verbatim}
+
+For example, the variable ``sysDescr.0'' is defined by the following
+form:
+%
+\begin{verbatim}
+(def-scalar-variable "sysDescr" (agent)
+  (format nil "~A ~A on ~A"
+          (lisp-implementation-type)
+          (lisp-implementation-version)
+          (machine-instance)))
+\end{verbatim}
+
+When the SNMP server running in LispWorks being queried from outside
+by \textsl{Net-SNMP} utilities, the query to ``sysDescr.0'' may shows:
+%
+\begin{verbatim}
+$ snmpget -v 2c -c public binghe-debian.local:8161\
+  sysDescr.0
+
+SNMPv2-MIB::sysDescr.0 = STRING:\
+ LispWorks 5.1.1 on binghe-debian.local
+\end{verbatim}
+
+The \texttt{AGENT} parameter in above
+\texttt{SNMP:DEF-SCALAR-VARIABLE} form is used to refer to current
+SNMP agent instance, which can be used to access the status of current
+agent. For example:
+\begin{verbatim}
+(def-scalar-variable "snmpInPkts" (agent)
+  (counter32 (slot-value agent 'in-pkts)))
+\end{verbatim}
+When ``snmpInPkts.0'' is queried, the slot value IN-PKTS of current
+agent instance will be coerced into ASN.1 ``Counter32'' type and
+returned.\footnote{This variable has't been used by current version of
+  SNMP-Server package}
+
+A SNMP Table can be defined as per column. For example, to define a
+column from ``sysORUpTime.1'' to ``sysORUpTime.9'', we have three
+ways:
+%
+\begin{verbatim}
+(def-listy-mib-table "sysORUpTime" (agent ids)
+  (if (null ids)
+    '((1) (2) (3) (4) (5) (6) (7) (8) (9))
+    (timeticks 0)))
+
+(def-listy-mib-table "sysORUpTime" (agent ids)
+  (if (null ids)
+    '(1 2 3 4 5 6 7 8 9)
+    (timeticks 0)))
+
+(def-listy-mib-table "sysORUpTime" (agent ids)
+  (if (null ids)
+    9
+    (timeticks 0)))
+\end{verbatim}
+
+The \texttt{IDS} parameter is the \textbf{rest} ``Object ID
+components'' when a query gets to current \textbf{base} ``Object ID''
+(``sysORUpTime'' here). You can treat the
+\texttt{SNMP:DEF-LISTY-MIB-TABLE} form as an ordinary function.  When
+it's called by an \texttt{IDS} parameter as \texttt{NIL}, it should
+return all its valid children to the SNMP agent.  A list \texttt{'((1)
+  (2) (3) (4) (5) (6) (7) (8) (9))} means each valid \textbf{rest} OID
+has only one element. For the first child, it's just the number
+``1''. When a child has \textbf{rest} OID as only one element, the
+long list can be simplified into \texttt{'(1 2 3 4 5 6 7 8 9)}, which
+just means ``sysORUpTime.1'', ``sysORUpTime.2'',
+... ``sysORUpTime.9''. And, when all the children have a single number
+and they are consistent (from 1 to N), the list can be simplified
+again into just a number ``9'' which also means 1 to 9, then
+\texttt{(1)} to \texttt{(9)}.
+
+For dynamic MIB tables, just let the form (as a function) returns an
+dynamic list when \texttt{IDS} is \texttt{NIL} will work, like this
+one:
+%
+\begin{verbatim}
+(def-listy-mib-table "lispFeatureName" (agent ids)
+  (let* ((features *features*)
+         (number-of-features
+          (list-length features)))
+    (if (null ids)
+      number-of-features
+      (when (plusp (car ids))
+        (->string (nth (mod (1- (car ids))
+                            number-of-features)
+                       features))))))
+\end{verbatim}
+
+Above ``lispFeatureName'' can return all elements of
+\texttt{*FEATURES*} in current lisp system as an ASN.1 \texttt{OCTET
+  STRING}.  Every time it's called, the \texttt{NUMBER-OF-FEATURES}
+will be calculated. It's not a optimized version. If you want faster
+reply, the list count progress should be defined outsize of above
+function instead as a cache to real values, and a separate thread may
+be used to update their values on schedule.
+
+To use above two macros for user-defined MIB nodes, named OID nodes
+must be defined first, like above ``sysDescr'' or
+``sysORUpTime''. There are two ways to achieve the goal: define a
+ASN.1-format MIB file then use ASN.1 compiler from ASN.1 package to
+translate it into LISP source code\footnote{The ASN.1 ``compiler'' can
+  only be used on LispWorks, but personal edition is supported}, or
+directly write the Lisp version of the MIB definition:\footnote{the
+  \texttt{|lispFeatureEntry|} must be defined before its children}
+
+\begin{verbatim}
+(in-package :asn.1)
+
+(setf *current-module* 'lisp-mib)
+
+(defoid |lispFeatureName| (|lispFeatureEntry| 2)
+  (:type 'object-type)
+  (:syntax '|DisplayString|)
+  (:max-access '|read-only|)
+  (:status '|current|)
+  (:description
+   "The string name of each element in *features*."))
+\end{verbatim}
+
+At compile-time, above definitions then will be translated into:
+\begin{verbatim}
+(IN-PACKAGE "ASN.1")
+
+(DEFVAR |lispFeatureName|
+  (MAKE-INSTANCE 'OBJECT-ID
+    :NAME (SYMBOL-NAME '|lispFeatureName|)
+    :VALUE 2
+    :PARENT |lispFeatureEntry| 
+    :MODULE *CURRENT-MODULE*
+    :TYPE 'OBJECT-TYPE
+    :SYNTAX '|DisplayString|
+    :MAX-ACCESS '|read-only|
+    :STATUS '|current|
+    :DESCRIPTION
+    "The string name of each element in *features*."))
+\end{verbatim}
+
+The low-level function \texttt{SNMP:REGISTER-VARIABLE} is used by
+\texttt{SNMP:DEF-SCALAR-VARIABLE} and
+\texttt{SNMP:DEF-LISTY-MIB-TABLE}.  Above definitions for ``sysDescr''
+will be macro-expanded into:
+%
+\begin{verbatim}
+(IN-PACKAGE "SNMP")
+
+(PROGN
+  (DEFUN ASN.1::|sysDescr| (AGENT &OPTIONAL #:G139443)
+    (DECLARE (IGNORABLE AGENT))
+    (IF (NULL #:G139443)
+        0
+      (FORMAT NIL
+              "~A ~A on ~A"
+              (LISP-IMPLEMENTATION-TYPE)
+              (LISP-IMPLEMENTATION-VERSION)
+              (MACHINE-INSTANCE))))
+  (EVAL-WHEN (:LOAD-TOPLEVEL :EXECUTE)
+    (REGISTER-VARIABLE (OID "sysDescr")
+                       #'ASN.1::|sysDescr|)))
+\end{verbatim}
+
+\texttt{SNMP:REGISTER-VARIABLE} has some additional keywords, which
+can be used explicitly to define MIB nodes in SNMP agent other than
+the default. It's possible to run multiple different SNMP agents
+simultaneously, but more codes are needed. You even cannot use
+\texttt{SNMP:ENABLE-SNMP-SERVICE} here.
+
+\section{LISP-MIB}
+
+Though just registering an OID node or sub-tree in SNMP server will
+fit the goal for querying the status of remote SNMP peers, if there's
+no coordination on places, conflict would happen and information
+defined by different SNMP vendors will be impossible to live
+together. SNMP community spend much time on how to define a common
+management information base framework to hold all variables from SNMP
+vendors, that is the MIB (Management Information Base) standard
+\cite{RFC:3418}.
+
+Another side: a SNMP server running in Lisp image should be possible
+to reply the status of Lisp system itself, for example, the most
+basically, implementation type and version, which can be returned by
+standard functions. ANSI Common Lisp has also defined some status
+functions of the Lisp system itself (i.e. the internal run time and
+real time), useful constants
+(i.e. \texttt{internal\--time\--units\--per\--second}), and special variables
+(\texttt{*read\--eval*}, \texttt{*print\--circle*}, ...) All these
+information plus implementation-specific data maybe useful to monitor
+and just query from outside world. For popular Lisp packages and some
+small applications which have their own status and parameters, the
+requirement for MIB sub-tree should also be considered.
+
+There's one place in MIB tree which just is left for SNMP vendor: the
+``enterprises''
+node\footnote{\textsl{iso.org.dod.internet.private.enterprises} (OID:
+  1.3.6.1.4.1)}. Since there's no Lisp-related MIB registered before,
+I registered a new enterprise number from IANA: \textbf{31609 (lisp)},
+which allocated to the \textbf{LISP-MIB}\footnote{The LISP-MIB is
+  still at early stage. Suggestions are welcomed.}
+
+The root of LISP-MIB is ``enterprises.lisp'' (31609). Its two children
+are ``common-lisp'' and ``scheme'', and ``scheme'' is reserved for
+Scheme, another important Lisp dialect.
+
+In ``common-lisp'' node, there're four common children at present:
+\begin{itemize}
+\item \textsl{lispSystem}, the summary information of current Lisp
+  system.
+\item \textsl{lispConstants}, constants of limits of number-types.
+\item \textsl{lispPackages}, information store for lisp packages
+  (utilities).
+\item \textsl{lispApplications}, information store for lisp
+  applications.
+\end{itemize}
+Other children of ``common-lisp'' node are reserved for each CL
+implementations.  Implementation-specific variables should be put
+there.
+
+The framework of LISP-MIB\footnote{The actual ASN.1 definition of
+  LISP-MIB and other LISP-*-MIBs can be found in \textsc{cl-net-snmp}'s
+  Subversion repository:
+  \texttt{https://cl-net-snmp.svn.sourceforge.net/svnroot/\\
+    cl-net-snmp/snmp/trunk/server/mib}} is shown in Figure
+\ref{fig:lisp-mib}.
+
+\begin{figure}
+\begin{verbatim}
+lisp (31609)
+  common-lisp (1)
+    lispSystem (1)
+      lispImplementationType (1)
+      lispImplementationVersion (2)
+      lispLongSiteName (3)
+      lispShortSiteName (4)
+      lispMachineInstance (5)
+      lispMachineType (6)
+      lispMachineVersion (7)
+      lispSoftwareType (8)
+      lispSoftwareVersion (9)
+      lispInternalRealTime (10)
+      lispInternalRunTime (11)
+      lispInternalTimeUnitsPerSecond (12)
+      lispUniversalTime (13)
+      lispFeatureTable (14)
+      lispPackageTable (15)
+      lispModuleTable (16)
+    lispConstants (2)
+      lispMostPositiveShortFloat (1)
+      lispLeastPositiveShortFloat (2)
+      lispLeastPositiveNormalizedShortFloat (3)
+      ...
+    lispPackages (3)
+      cl-net-snmp (1)
+        clNetSnmpObjects (1)
+        clNetSnmpEnumerations (2)
+          clNetSnmpAgentOIDs (1)
+            clNetSnmpAgent (1)
+            clNetSnmpAgentLispWorks (5)
+            clNetSnmpAgentCMUCL (6)
+            ...
+      cl-http (2)
+      ...
+    lispApplications (4)
+    lispworks (5)
+    cmucl (6)
+    sbcl (7)
+    clozure (8)
+    allegro (9)
+    scl (10)
+    ...
+  scheme (2)
+\end{verbatim}  
+  \caption{LISP-MIB}
+  \label{fig:lisp-mib}
+\end{figure}
+
+\section{Implementation details}
+
+\subsection{History of cl-net-snmp Project}
+
+The \textsc{cl-net-snmp} project started from March 2007. Its first
+several versions are CFFI-based API wrappers on \textsl{Net-SNMP} as
+its name (\textsc{cl-net-snmp}) indicates. There're some restrictions
+when based on \textsl{Net-SNMP}.  To support MIB, the corresponding
+ASN.1 definition files must be installed. It's impossible to deliver a
+single Lisp image to hold all things together.  Soon after the
+``0.1.0'' release on April 8, 2007, I turned to pure-lisp
+implementation which tries to support full SNMP protocol with the
+``OID to MIB'' translation.
+
+On September 28, 2007, the ``\textsc{cl-net-snmp} 1.0'' was released,
+which support client protocol of SNMPv1 and SNMPv2c. In this version,
+I use a LALR parser called ``ZEBU'' to parse MIB definitions of ASN.1
+format from net-snmp project, parse all ASN.1 ``Object ID''
+definitions and then read them into a single list as the ``MIB
+tree''. The API and tree structure learnt many ideas from Simon
+Leinen's \textsl{SYSMAN} \cite{Project:SYSMAN}.
+
+In \textsl{SYSMAN}, ASN.1-format MIB definitions are first translated
+into plain format by a script outside Lisp, then easily loaded by Lisp
+to make up the ``MIB tree''. So there's no ``ASN.1 parsing'' working
+in \textsl{SYSMAN}'s source code.
+
+Different from \textsl{SYSMAN}, \textsc{cl-net-snmp} tries to
+implement the SNMP protocol in a ``nature Lisp way'', even more
+naturally than in the C-based \textsl{Net-SNMP} project. On Oct 31,
+2007, \textsc{cl-net-snmp}'s Subversion repository moved to
+SourceForge.net and at this time it's version is ``1.2'', heavily
+depending on ZEBU LALR parser \cite{Project:ZEBU} to read original
+ASN.1-format MIB definitions.
+
+ZEBU is hard to use for parsing ASN.1, partly because of its built-in
+regex-based lexer, which cannot be used to read multi-line strings
+(just like the Lisp strings). I want to move ``translation'' job from
+runtime to compile-time to burst the performance of package loading,
+throw the stupid lisp tree away and use just native lisp variables to
+hold the MIB.
+
+Based on above idea, starting from version 1.2, I tried to write a
+simple ``ASN.1 compiler'' which first parses ASN.1-format MIB files
+into an S-expression, and then translates it into Common Lisp source
+code which contains type definitions (\texttt{deftype},
+\texttt{defclass}, ...) and value assignments (\texttt{defvar},
+\texttt{defparameter}, ...). This idea is a bit like the RTL in GCC
+compiler but all is for Lisp and on Lisp. ASN.1 syntax is very hard to
+parse, especially when it contains obsolete \texttt{MACRO}
+definitions. After some investigation work, finally I chose the
+LispWorks' \textsl{PARSERGEN} package, a close-source utility which
+ships with all LispWorks editions include the free personal
+edition. The \textsl{PARSERGEN} package is only a parser, which needs
+a lexer work together. Due to the similarity between ASN.1 token and
+Lisp token, I just use a modified CL readtable to read raw ASN.1
+files. Hacking on CL readtables is a bit crazy but finally succeed.  I
+wrote a separate ASN.1 package for doing all ASN.1 parsing and
+``compiling'' job, and move ASN.1-related source code from SNMP
+package into a new standalone ``ASN.1'' package. So the new ASN.1
+package has two parts, one is the ``runtime'' part, which runs on all
+support CL implementations and is depended by the main SNMP package;
+the other part ``compiler'' only works on LispWorks, and is only
+needed when people want to load new MIB which isn't shipped with SNMP
+package.
+
+More than half a year later, on Jul 13, 2008, the long-awaited
+``\textsc{cl-net-snmp} 2.0'' was out. All above ideas were well
+implemented. Starting from this release, the project has been divided
+into several sub-projects and each of them has its own version
+numbers. I try to manage the version policy like software on Symbolics
+Lisp machine \cite{Symbolics:Patch}: each software has a major version
+number and a minor version number; if the software can be updated by
+loadable lisp patch, only minor version is increased, and if the
+structure of lisp code is changed much or any refactoring happens, the
+major version must be increased to start a fresh new version. (One
+example is the
+\textsl{CL-HTTP}\footnote{\texttt{http://www.cl-http.org:8001}}
+project, whose version is 70.216 which follows the Symbolics
+policy). At early stage, it's hard to keep symbols stable, so after
+fixing some bugs I released the version 3.0 on Jul 21, 2008, which is
+the first public release of new design of the SNMP package.  Following
+features are supported:
+\begin{itemize}
+\item Full SNMP protocol support (\textsl{SNMPv1}, \textsl{SNMPv2c}, \textsl{SNMPv3})
+\item Support MIB and ASN.1 object id names
+\item Fast BER encode/decode based on CLOS
+\item UDP auto-retransmit support
+\item Simple SNMP Server on LispWorks
+\end{itemize}
+The ``Simple SNMP Server'' is a very early support on server-side
+SNMP: no \textsl{SNMPv3}, no VACM, even "SNMP Walk" is not
+supported. All that client side can do is ``SNMP GET'' something. From
+this time, my plan changed a little: beside making a SNMP client
+package for system administrators who want to manage remote peers by
+Lisp-based software, I also want to write a portable SNMP server which
+lives in Lisp image as a separate thread and helps lisp programmers
+monitor their lisp applications from outside. Since SNMP is a
+\textsl{de facto} standard for remote management, with my SNMP server
+support, server-side lisp application may be managed by already
+existing SNMP-based platform such as \textsl{Nagios} and \textsl{HP
+  OpenView NNM}.
+
+On Sep 8, 2008, \textsc{cl-net-snmp} 5.0 was released, with a portable
+SNMP server based on
+\textsl{USOCKET}\footnote{\texttt{http://common-lisp.net/project/usocket}}
+project and portable-threads package from
+\textsl{GBBopen}\footnote{\texttt{http://gbbopen.org}}
+project. \textsc{cl-net-snmp} 5.5, released on Sep 24, 2008, adds full
+``SNMP Walk'' support for the SNMP server, and start from this
+version, a LISP-MIB has been defined to standardize the server-side
+variables in SNMP server, but the server side is still lacking in VACM
+support. \textsc{cl-net-snmp} 5.19 is the latest release when writing
+this paper. It fixed many bugs, and its API is explained in this
+paper.
+
+\subsection{Portable UDP Networking}
+
+There's few portable UDP networking packages when I first tried to
+develop a pure-lisp SNMP package. This is reasonable because UDP/IP
+applications aren't as many as TCP/IP, and at least one commercial CL
+platform (LispWorks) even doesn't have any UDP support.
+
+One UNIX-derived systems, the
+\textsl{IOlib}\footnote{\texttt{http://common-lisp.net/project/iolib}}
+package is a choice for portable networking: it exports the POSIX
+compatibility layer through
+\textsl{CFFI}\footnote{\texttt{http://common-lisp.net/project/cffi}}
+and has a high-level networking package (net.sockets) and I/O
+multiplex package (io.multiplex). I don't use it just because it
+doesn't support win32 well, and it uses many C codes and foreign
+library which cause it hard to deliver into single, simple standalone
+program on LispWorks. After some investigation, I decided to extend
+the
+\textsl{USOCKET}\footnote{\texttt{http://common-lisp.net/project/usocket}}
+project to support UDP/IP, because \textsl{USOCKET} already has a very
+good networking API framework.
+
+\textsl{USOCKET} is much simpler than \textsl{IOlib}. It tries to use
+networking APIs which each supported implementations already have, and
+add foreign functions through FFI interface of their own when
+necessary. So there's no dependency on \textsl{CFFI} and any other C
+code (except on ECL, its FFI interface need C code as embeddable) The
+\textsl{USOCKET} project also has a high-level \texttt{WAIT-FOR-INPUT}
+function which act like UNIX system call \texttt{select()}, so that
+users can use this function to swap messages from multiple sockets in
+one thread.
+
+I wrote an \textsl{USOCKET-UDP} sub-project for the SNMP package,
+which implements additional API which is suggested by Erik Huelsmann,
+the USOCKET maintainer. The new functions \texttt{SOCKET-SEND} and
+\texttt{SOCKET-RECEIVE} can be used to operate on a new class of
+socket called \texttt{DATAGRAM-USOCKET}. \textsl{USOCKET-UDP} depends
+on \textsl{USOCKET} 0.4.x, with the first 0.4.0 released on Oct 28,
+2008. Erik also accepted me in the \textsl{USOCKET} team, which the
+next major release will contain the UDP support.
+
+Another issue in UDP network programming is that user code may deal
+with packet loss, because UDP is not reliable. A simple way to handle
+it is used by \textsl{Net-SNMP} project: define a maximum retry time
+and a timeout value, and try to limit resending on timeout. My SNMP
+package doesn't use this method, instead, I use an ``auto retransmit''
+approach \cite{Jacobson:RTT} which is used on TCP networking: the
+timeout value is not fixed but calculated by actual message round-trip
+time (RTT). The maximum retry time is still a fix number, as the
+timeout value being a range (default is 2~60 seconds). I defined a new
+high-level \texttt{SOCKET-SYNC} function for doing this automatically.
+
+\subsection{ASN.1}
+
+ASN.1 (Abstract Syntax Notation One) \cite{ISO:ASN.1} is an
+international standard which aims at specifying data used in
+telecommunication protocols. For more details on ASN.1 and its
+history, see Olivier Dubuisson's famous book \cite{Book:ASN.1}.
+
+SNMP highly depends on ASN.1: SNMP MIB (Management Information Base)
+\cite{RFC:3418} is full defined by ASN.1; The most basic element and
+query object, ``Object ID'', is just a standard ASN.1 type; all data
+in SNMP message are enclosed as an ASN.1 \texttt{SEQUENCE} which is
+encoded by BER (Basic Encode Rule) which is defined by ASN.1 as one of
+encoding/decoding methods.
+
+In ASN.1 package, the ASN.1 \texttt{SEQUENCE} type is generally mapped
+to Common Lisp sequences, which include two subtype: vector and list.
+There's only one exception: the empty ASN.1 \texttt{SEQUENCE} is
+mapped into \texttt{\#()}, a empty vector, but \texttt{NIL}, a empty
+list. That's because \texttt{NIL} is mapped into ASN.1 \texttt{NULL}
+type, which is also the only valid element of this type.
+
+There're other ASN.1 primitive data like strings and integers which
+are needed by SNMP and mapped into Common Lisp types by the ASN.1
+package.  Table \ref{table:asn.1-type-mapping} is a table of type
+mapping which the ASN.1 package currently supports. Most ASN.1 types
+defined in ASN.1 package are CLOS classes.
+
+\begin{table}
+  \centering
+  \caption{ASN.1 to Common Lisp Type Mapping}
+  \label{table:asn.1-type-mapping}
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{ASN.1 Type} & \textbf{Common Lisp Type}\\
+    \hline
+    \texttt{OBJECT IDENTIFIER} & \texttt{ASN.1:OBJECT-ID}\\
+    \texttt{INTEGER} & \texttt{CL:INTEGER}\\
+    \texttt{NULL} & \texttt{CL:NULL}\\
+    \texttt{SEQUENCE} & \texttt{CL:SEQUENCE}\\
+    \texttt{OCTET STRING} & \texttt{CL:STRING}\\
+    \texttt{IPADDRESS} & \texttt{ASN.1:IPADDRESS}\\
+    \texttt{COUNTER32} & \texttt{ASN.1:COUNTER32}\\
+    \texttt{COUNTER64} & \texttt{ASN.1:COUNTER64}\\
+    \texttt{GAUGE} & \texttt{ASN.1:GAUGE}\\
+    \texttt{TIMETICKS} & \texttt{ASN.1:TIMETICKS}\\
+    \texttt{OPAQUE} & \texttt{ASN.1:OPAQUE}\\
+    \hline
+  \end{tabular}
+\end{table}
+
+ASN.1 support in SNMP implementation may have two parts: one is
+necessary for SNMP, and the other is not but also very important.
+
+\subsubsection{BER support}
+
+The BER (Basic Encoding Rule) \cite{ISO:BER} support on ASN.1 data is
+essential for implementing SNMP because BER is the connection between
+ASN.1 data and SNMP raw packets. BER encodes ASN.1 primitive data into
+three parts: type, length and value (TLV). The corresponding API of
+BER in ASN.1 package is \texttt{ASN.1:BER-ENCODE} and
+\texttt{ASN.1:BER-DECODE}. For example, an integer 10000 can be
+encoded into four bytes: 2, 2, 39 and 16, of which the first ``2''
+means ASN.1 type \texttt{INTEGER}, the second ``2'' means following
+two bytes is its actual data, and 39 and 16 mean the actual value
+($39*256+16=10000$):
+
+\begin{verbatim}
+> (asn.1:ber-encode 10000)
+#(2 2 39 16)
+
+> (asn.1:ber-decode #(2 2 39 16))
+10000
+\end{verbatim}
+
+Another typical example is the encoding of an ASN.1 \texttt{SEQUENCE}.
+This type is usually used to implement structure in other languages.
+The elements of an ASN.1 \texttt{SEQUENCE} can be anything include
+\texttt{SEQUENCE}.  For example, a sequence which contains another
+sequence which contains an integer 100, a string ``abc'', and a
+\texttt{NULL} data can be expressed into \texttt{\#(\#(100 "abc"
+  nil))} in Common Lisp according to our language mapping design. It
+can be encoded and decoded correctly:
+%
+\begin{verbatim}
+> (asn.1:ber-encode #(#(100 "abc" nil)))
+#(48 12 48 10 2 1 100 4 3 97 98 99 5 0)
+
+> (asn.1:ber-decode *)
+#(#(100 "abc" NIL))
+\end{verbatim}
+
+The type byte of sequence is 48. Three elements in inner sequence can
+be seen as encoded bytes: \texttt{\#(2 1 100)} (integer 100),
+\texttt{\#(4 3 97 98 99)} (string ``abc''), and \texttt{\#(5 0)}
+(Null).
+
+Both \texttt{ASN.1:BER-ENCODE} and \texttt{ASN.1:BER-DECODE} are
+CLOS-based generic functions. \texttt{ASN.1:BER-ENCODE} dispatches on
+Common Lisp types, for example the \texttt{INTEGER}:
+
+\begin{verbatim}
+(defmethod ber-encode ((value integer))
+  (multiple-value-bind (v l)
+      (ber-encode-integer value)
+    (concatenate 'vector
+                 (ber-encode-type 0 0 +asn-integer+)
+                 (ber-encode-length l)
+                 v)))
+\end{verbatim}
+
+The method \texttt{(METHOD ASN.1:BER-ENCODE (INTEGER))} generates a
+vector containing type bytes, length bytes and encoding bytes of the
+integer. When decoding on integers, generic function
+\texttt{ASN.1:BER-DECODE} accepts sequences or streams which contain
+data, and then call \texttt{ASN.1:BER-DECODE-VALUE} which dispatches
+on keywords (\texttt{:integer} here):
+
+\begin{verbatim}
+(defmethod ber-decode ((value sequence))
+  (let ((stream (make-instance 'ber-stream
+                               :sequence value)))
+    (ber-decode stream)))
+
+(defmethod ber-decode ((stream stream))
+  (multiple-value-bind (type type-bytes)
+      (ber-decode-type stream)
+    (multiple-value-bind (length length-bytes)
+        (ber-decode-length stream)
+      (if type
+        (ber-decode-value stream type length)
+        ;; When unknown type detected, recover the
+        ;; whole data into an ASN.1 RAW object.
+        (ber-decode-value
+          stream type
+          (cons length
+            (append type-bytes length-bytes)))))))
+
+(defmethod ber-decode-value ((stream stream)
+                             (type (eql :integer))
+                             length)
+  (declare (type fixnum length) (ignore type))
+  (ber-decode-integer-value stream length))
+\end{verbatim}
+
+This BER engine in ASN.1 packages is extensible. That's the biggest
+difference from other existing BER engines in Common Lisp which can be
+found in \textsl{Lisp-SNMP} and \textsl{trivial-ldap}.  The first
+value returned by \texttt{ASN.1:BER-DECODE-TYPE} comes from a
+hash-table \texttt{ASN.1::*BER-DISPATCH-TABLE*}, and all ASN.1 types
+are registered into this hash-table:
+
+\begin{verbatim}
+(defun install-asn.1-type (type class p/c tags)
+  (setf (gethash (list class p/c tags)
+                 *ber-dispatch-table*)
+        type))
+
+(install-asn.1-type :integer 0 0 +asn-integer+)
+\end{verbatim}
+
+An SNMP message in all is actually an ASN.1 \texttt{SEQUENCE}, for
+example, the SNMPv2c message format is defined in \textsl{RFC 1901}
+\cite{RFC:1901} by the following definition:
+%
+\begin{verbatim}
+Message ::=
+  SEQUENCE {
+    version
+      INTEGER {
+        version(1)  -- modified from RFC 1157
+      },
+      community           -- community name
+        OCTET STRING,
+      data                -- PDUs as defined in [4]
+        ANY
+  }
+\end{verbatim}
+
+Above definition shows that the SNMPv2c message is an ASN.1
+\texttt{SEQUENCE} which contains three parts: the SNMP version as an
+\texttt{INTEGER}, the SNMPv2c community as an \texttt{OCTET STRING},
+and the message data is actually type of SNMP PDU, which has several
+different sub-types. Once a full-power BER engine is made, the
+encode/decode of SNMP messages would be quite easy.
+
+\subsubsection{MIB support}
+
+The \texttt{OBJECT IDENTIFIER} (OID) is the most important ASN.1 type.
+The structure of OID instances and storage method of OID tree consist
+the biggest differences of each ASN.1 library/package. Most ASN.1
+implementations' OID types store full OID numbers list in each OID
+instance. For example, in \textsl{Net-SNMP}, the OID type is just
+mapped to C array of \texttt{unsigned long} or \texttt{unsigned char}.
+Other high-level SNMP libraries usually define OID as a class, which
+has an OID number list as a slot (member variable). For example, the
+OID instance ``sysDescr.0'' (1.3.6.1.2.1.1.1.0) has the OID number
+list \texttt{\#(1 3 6 1 2 1 1 1 0)}. The whole array may be stored
+into OID instance.
+
+In \textsc{cl-net-snmp}'s ASN.1 package, the \texttt{OBJECT-ID} class
+doesn't hold full OID number list but only the last one. To construct
+a complete OID number list, the rest information is accessed through
+the ``parent'' OID instance of current OID instance. The currrent
+definition of the class \texttt{OBJECT-ID} is shown in figure
+\ref{defclass:object-id}.
+
+\begin{figure}
+\begin{verbatim}
+;;;; from #p"ASN1:RUNTIME;OBJECT-ID.LISP"
+
+(in-package :asn.1)
+
+(defclass object-id (asn.1-type)
+  ((name        :type string
+                :reader oid-name
+                :initarg :name)
+   (value       :type integer
+                :reader oid-value
+                :initarg :value)
+   (type        :type oid-type
+                :reader oid-type
+                :initarg :type)
+   (syntax      :type oid-syntax
+                :reader oid-syntax
+                :initarg :syntax)
+   (max-access  :type access
+                :reader oid-max-access
+                :initarg :max-access)
+   (status      :type status
+                :reader oid-status
+                :initarg :status)
+   (description :type string
+                :reader oid-description
+                :initarg :description)
+   (module      :type symbol
+                :reader oid-module
+                :initarg :module)
+   (parent      :type object-id
+                :reader oid-parent
+                :initarg :parent)
+   (children    :type hash-table
+                :accessor oid-children
+                :initform (make-hash-table)))
+  (:documentation "OBJECT IDENTIFIER"))
+\end{verbatim}  
+  \caption{The definition of \texttt{ASN.1:OBJECT-ID}}
+  \label{defclass:object-id}
+\end{figure}
+
+The only useful slots of class \texttt{OBJECT-ID} at current are
+\texttt{NAME}, \texttt{VALUE}, \texttt{PARENT} and
+\texttt{CHILDREN}. The \texttt{NAME} slot is unnecessary, only used by
+named OID instances. Other slots are used to build the OID tree which
+should include all OID instances in current lisp image.
+
+The interface function to build or access an OID instance is
+\texttt{ASN.1:OID}.  For example, the OID ``sysDescr.0''
+(1.3.6.1.2.1.1.1.0) may be accessed through following ways:
+
+\begin{verbatim}
+> (asn.1:oid "sysDescr.0")
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+
+> (asn.1:oid "1.3.6.1.2.1.1.1.0")
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+
+> (asn.1:oid #(1 3 6 1 2 1 1 1 0))
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+
+> (asn.1:oid '(1 3 6 1 2 1 1 1 0))
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+
+> (asn.1:oid (list (asn.1:oid "sysDescr") 0))
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr.0>
+\end{verbatim}
+
+The MIB node name ``sysDescr'' is pre-defined in Lisp code which is
+auto-generated from its ASN.1 definitions. Almost all MIB files are
+shipped with net-snmp and are provided by the SNMP package. A simple
+ASN.1 ``compiler'' is used to compile these ASN.1-format MIB files
+into Lisp source files. The ASN.1 ``compiler'' is still at its early
+stage, which is currently used only to translate OID assignments into
+Lisp variable definitions.  For example, the ``sysDescr'' MIB node as
+a OID instance is stored into Lisp variable
+\texttt{ASN.1::|sysDescr|}:
+
+\begin{verbatim}
+> asn.1::|sysDescr|
+#<ASN.1:OBJECT-ID SNMPv2-MIB::sysDescr (1) [0]>
+\end{verbatim}
+
+The internal structure of this OID instance is shown in Table
+\ref{table:object-id}.
+
+\begin{table}
+  \centering
+  \caption{Internal structure of \texttt{OBJECT-ID} instance}
+  \label{table:object-id}
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Slot} & \textbf{Value}\\
+    \hline
+    \texttt{children} & \texttt{\#<EQL Hash Table\{0\} 21B1550B>}\\
+    \texttt{description} & \texttt{"A textual description of the entity."}\\
+    \texttt{max-access} & \texttt{ASN.1::|read-only|}\\
+    \texttt{module} & \texttt{ASN.1::|SNMPv2-MIB|}\\
+    \texttt{name} & \texttt{"sysDescr"}\\
+    \texttt{parent} & \texttt{\#<ASN.1:OBJECT-ID}\\
+    & \texttt{\ \ SNMPv2-MIB::system (1) [9]>}\\
+    \texttt{status} & \texttt{ASN.1::|current|}\\
+    \texttt{syntax} & \texttt{T}\\
+    \texttt{type} & \texttt{ASN.1::OBJECT-TYPE}\\
+    \texttt{value} & \texttt{1}\\
+    \hline
+  \end{tabular}
+\end{table}
+
+Compared with its original definition in ``SNMPv2-MIB.txt'', almost
+all information except the SYNTAX part is saved:
+
+\begin{verbatim}
+sysDescr OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the entity.
+         This value should include the full
+         name and version identification of
+         the system's hardware type, software
+         operating-system,
+         and networking software."
+    ::= { system 1 }
+\end{verbatim}
+
+As readers may see, the slot \texttt{parent} of
+\texttt{ASN.1::|sysDescr|} is another OID instance, which is stored in
+\texttt{ASN.1::|system|}:
+
+\begin{verbatim}
+> (asn.1:oid-parent asn.1::|sysDescr|)
+#<ASN.1:OBJECT-ID SNMPv2-MIB::system (1) [9]>
+
+> asn.1::|system|
+#<ASN.1:OBJECT-ID SNMPv2-MIB::system (1) [9]>
+
+> (eq * **)
+T
+
+> (asn.1:oid-name-list asn.1::|system|)
+("iso" "org" "dod" "internet" "mgmt" "mib-2"
+ "system")
+
+> (asn.1:oid-number-list asn.1::|system|)
+(1 3 6 1 2 1 1)
+\end{verbatim}
+
+Actually all ``named'' OID instances (like ``sysDescr'') have
+``named'' OID instances as their parent or children which can be
+accessed from their corresponding slots; all of them are stored in one
+``MIB tree''.  OID instances which doesn't have a name (like
+``sysDescr.0'') are created by \texttt{ASN.1:OID} function temporary
+and only \texttt{parent} slot are useful for them to produce the full
+OID number list which used by SNMP operations.
+
+The ``root'' node of the MIB tree is stored in Lisp variable
+\texttt{ASN.1::*ROOT-OBJECT-ID*}, which is the entry point of all
+named MIB nodes.  Its unique non-\texttt{NIL} slot is the slot
+\texttt{children}, which have two elements, one of which is just the
+famous node ``iso'', which has almost all valid OID instances as its
+(indirect) children:
+
+\begin{verbatim}
+> asn.1::*root-object-id*
+#<ASN.1:OBJECT-ID .>
+> (asn.1::list-children asn.1::*root-object-id*)
+(#<ASN.1:OBJECT-ID iso (1) [1]>
+ #<ASN.1:OBJECT-ID zero (0) [1]>)
+\end{verbatim}
+
+The MIB design in ASN.1 package has been revised several times, and
+it's still unstable at current stage. There are many interesting
+details here but discussing all of them is out of scope of this paper.
+
+\subsection{SNMP}
+
+Encryption and authentication support in \textsl{SNMPv3} need HMAC,
+DES, MD5 and SHA1 algorithms. This is done by Nathan Froyd's IRONCLAD%
+\footnote{\texttt{http://method-combination.net/lisp/ironclad/}}
+project, which supplies almost all authenticate and encryption
+algorithms written in pure Common Lisp.
+
+\section{Future Work}
+
+\subsection{ASN.1 and SNMP}
+
+There's still a lot of work to do. Currently the biggest issue in
+ASN.1 package is that different MIB nodes with the same name cannot be
+stored correctly, because all MIB variables are defined in package
+``ASN.1''. To solve this problem, the ASN.1 to Lisp language mapping
+needs to be revised to support mapping ASN.1 ``module'' directly into
+Lisp packages, with slightly name changes (i.e. module name
+``SNMPv2-MIB'' may change to Lisp package name ``ASN.1/SNMPv2-MIB''
+for clarity). This is a big change, and more packages will be created
+in Lisp image. To make sure a MIB node could be referred correctly
+from other ASN.1 module packages, the ASN.1 definitions should be
+written very strictly: the \texttt{IMPORT} section in module
+definitions will be translated into \texttt{IMPORT-FROM} in Lisp
+package definitions. And to make sure the unmodified MIB files from
+net-snmp can still be processed correctly, a set of ``famous'' MIB
+nodes may be imported implicitly.
+
+Another big piece of work happens in ASN.1 compiler. Currently the
+\texttt{type} slot of \texttt{OBJECT-ID} class is not used because the
+only value is \texttt{T}, but this type information is needed by SNMP
+package. The ASN.1 compiler needs to be enhanced to support
+compilation on type definitions.  For example, the ``Mac\-Address''
+type was defined by SNMPv2-TC:
+\begin{verbatim}
+MacAddress ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1x:"
+    STATUS       current
+    DESCRIPTION
+            "..."
+    SYNTAX       OCTET STRING (SIZE (6))
+\end{verbatim}
+As a SNMP ``textual convention'', above type definitions may be
+compiled into a Common Lisp \texttt{deftype}:
+\begin{verbatim}
+(deftype |MacAddress| ()
+  "..."
+  `(string 6))
+\end{verbatim}
+An ASN.1 type definition should be translated into CLOS class
+definitions. For example, the MIB table entry ``IfTestEntry''
+\begin{verbatim}
+IfTestEntry ::=
+    SEQUENCE {
+        ifTestId           TestAndIncr,
+        ifTestStatus       INTEGER,
+        ifTestType         AutonomousType,
+        ifTestResult       INTEGER,
+        ifTestCode         OBJECT IDENTIFIER,
+        ifTestOwner        OwnerString
+    }
+\end{verbatim}
+may be compiled into following CLOS \texttt{defclass} form:
+%
+\begin{verbatim}
+(defclass |IfTestEntry| ()
+  ((|ifTestId|     :type |TestAndIncr|)
+   (|ifTestStatus| :type integer)
+   (|ifTestType|   :type |AutonomousType|)
+   (|ifTestResult| :type integer)
+   (|ifTestCode|   :type object-id)
+   (|ifTestOwner|  :type |OwnerString|)))
+\end{verbatim}
+
+This translation will be used by high-level SNMP operations.  Maybe
+there will be a special version of ``SNMP Walk'' which returns array
+of CLOS instances instead of lists, and users can query remote SNMP
+tables using SQL-like or LDAP-like syntax. All of them depends on
+better ASN.1 package.
+
+The SNMP package also needs more work. Currently the only way to do
+multiple SNMP query at the same time is to use multi-threads which
+opening multiple SNMP sessions and sockets.  It's possible to query
+multiple remote SNMP peers at the same time, using only one socket and
+work in one thread, just like the function
+\texttt{snmp\_synch\_response()} in \textsl{Net-SNMP}. This facility
+is important for enterprise users, and must be supported in future
+versions.
+
+On the server side of SNMP package, the VACM (View-based Access
+Control Model) \cite{RFC:3415} is on the top of the TODO
+list. \textsl{RFC 3415} will be implemented in future versions of SNMP
+package.
+
+\subsection{Other Related Projects}
+
+Obviously SNMP is not the only networking protocol which is based on
+ASN.1 and UDP.  The existing work of \textsc{cl-net-snmp} could be
+used to develop Common Lisp packages of other related networking
+protocols.
+
+Lightweight Directory Access Protocol (LDAP) is just another important
+protocol which is completely based on ASN.1. LDAP is widely used for
+management in large busyness and there're many ``directory server''
+productions. Currently the LDAP support in Common Lisp is still in its
+early stage, only a few of small packages being developed. A new LDAP
+package based on ASN.1 package is on the plan list of
+\textsc{cl-net-snmp} project.
+
+Intelligent Platform Management Interface (IPMI) \cite{IPMI} is also
+another network management protocol beside SNMP. It's a UDP-based
+protocol which is slightly easier than SNMP and usually implemented
+directly by server hardware. Through IPMI, system administrators can
+power off a remote server, query its hardware log, or logging to the
+server console through the Serial-On-LAN (SOL) interface. An IPMI
+package based on existing portable UDP networking package is in
+progress.
+
+%\appendix
+%\section{Appendix Title}
+%
+%This is the text of the appendix, if you need one.
+
+\acks
+
+This project is based in part upon work supported by my employer, the
+NetEase.com, Inc.
+
+Thanks will go to the following Common Lisp packages and
+implementations which are depended on by \textsc{cl-net-snmp} project
+and their major author/maintainer:
+%
+\begin{itemize}
+\item LispWorks (Dave Fox \& Martin Simmons)
+\item USOCKET Project (Erik Huelsmann)
+\item GBBopen's PortableThreads (Daniel Corkill)
+\item IRONCLAD Project (Nathan Froyd)
+\end{itemize}
+
+\bibliographystyle{plainnat}
+
+\begin{thebibliography}{10}
+
+\bibitem{RFC:1901}
+J.~Case, K.~McCloghrie, M.~Rose, and S.~Waldbusser.
+\newblock {\textit{RFC 1901: Introduction to Community-based SNMPv2}}.
+
+\bibitem{Book:ASN.1}
+O.~Dubuisson.
+\newblock {\em {ASN.1 - Communication between heterogeneous systems}}.
+\newblock Morgan Kaufmann, 2000.
+
+\bibitem{IPMI}
+{Intel and others}.
+\newblock {\textit{Intelligent Platform Management Interface},
+  \texttt{http://www.intel.com/design/servers/ipmi/}}.
+
+\bibitem{ISO:ASN.1}
+{ITU-T Rec. X.680 (2002) | ISO/IEC 8824-1:2002}.
+\newblock {\textit{Abstract Syntax Notation One (ASN.1) Specification of Basic
+  Notation}}.
+
+\bibitem{ISO:BER}
+{ITU-T Rec. X.690 (2002) | ISO/IEC 8825-1:2002}.
+\newblock {\textit{ASN.1 encoding rules: Specification of Basic Encoding Rules
+  (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules
+  (DER)}}.
+
+\bibitem{Jacobson:RTT}
+V.~Jacobson.
+\newblock Congestion avoidance and control.
+\newblock In {\em Proceedings of SIGCOMM '88}, 1988.
+
+\bibitem{Project:ZEBU}
+J.~Laubsch.
+\newblock {\textit{ZEBU: A Tool for Specifying Reversible LALR(1) Parsers}},
+  January 1999.
+
+\bibitem{Project:SYSMAN}
+S.~Leinen.
+\newblock {\textit{SYSMAN: A System Management Substrate for Common Lisp},
+  \texttt{http://www.switch.ch/misc/leinen/snmp/sysman.html}}, 1998.
+
+\bibitem{RFC:3418}
+R.~Presuhn, J.~Case, K.~McCloghrie, M.~Rose, and S.~Waldbusser.
+\newblock {\textit{RFC 3418: Management Information Base (MIB) for the Simple
+  Network Management Protocol (SNMP)}}, December 2002.
+
+\bibitem{Symbolics:Patch}
+Symbolics.
+\newblock {\em Program Development Utilities}, chapter Patch Facility, page~65.
+\newblock Symbolics, Inc., 1986.
+
+\bibitem{Project:Valkama}
+L.~Valkama.
+\newblock {\textit{Network management with lisp},
+  \texttt{http://www.valkama.se/article/lisp/snmp}}, 2006.
+
+\bibitem{RFC:3415}
+B.~Wijnen, R.~Presuhn, and K.~McCloghrie.
+\newblock {\textit{RFC 3415: View-based Access Control Model (VACM) for the
+  Simple Network Management Protocol (SNMP)}}, December 2002.
+
+\end{thebibliography}
+
+\end{document}
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
+
+% LocalWords: snmp ASN MIB Internetworking AUTH proto PRIV SNMPv Chun SYSMAN IP
+% LocalWords: IANA CFFI Tian UDP binghe NetEase de facto CMUCL SBCL Valkama FFI
+% LocalWords: Clozure lispSystem LispWorks Scieneer Solaris API debian IPMI RTL
+% LocalWords: PDU sysDescr OID LALR SHA noAuthNoPriv authNoPriv There're Erlang
+% LocalWords: authPriv readonly LISTY lispConstants snmpInPkts PKTS sysORUpTime
+% LocalWords: oid lispFeatureName lispPackages lispFeatureEntry opensource PDUs
+% LocalWords: lispApplications SourceForge there're Leinen's hostname HMAC eval
+% LocalWords: ABCDEFGHABCDEFGH has't regex multi runtime deftype defclass GCC
+% LocalWords: defvar defparameter PARSERGEN readtable readtables refactoring
+% LocalWords: CLOS VACM Nagios OpenView NNM Sep USOCKET GBBopen TCP IOlib io
+% LocalWords: POSIX APIs ECL Huelsmann DATAGRAM RTT Dubuisson's TLV abc
+% LocalWords: IPADDRESS TIMETICKS ldap pre EQL txt iso Froyd's IfTestEntry SQL
+% LocalWords: synch TODO GBBopen's PortableThreads Corkill Froyd sigproc
+@
+
+
+1.4
+log
+@Final...
+@
+text
+@d2 1
+a2 1
+% $Id: snmp.tex,v 1.3 2008/12/07 02:45:25 binghe Exp binghe $
+d4 1
+a4 1
+% ILC 09 Paper by Chun Tian (binghe)
+d6 51
+a56 2
+%\documentclass[preprint,nocopyrightspace,natbib,9pt]{sigplanconf}
+\documentclass[nocopyrightspace,natbib,9pt]{sigplanconf}
+d63 1
+a63 1
+\copyrightyear{2008} 
+d84 1
+a84 1
+  brings SNMP capability into Common Lisp images, which could be
+d86 1
+a86 1
+  software. It's also a flexible platform for researches of system
+d153 1
+a153 1
+out of maintained, never try to support new protocol \textsl{SNMPv3}.
+d168 1
+a168 1
+time \textsl{SYSMAN} under active developments. After reading the
+d175 1
+a175 1
+Now the SNMP package supports the following Common Lisp
+d177 1
+a177 1
+Scieneer CL; running under Linux, Solaris, Mac OS X and Windows.
+d391 1
+a391 1
+MD5\footnote{The actually authenticate protocol used by SNMP is
+@
+
+
+1.3
+log
+@final papaer for first round submission (ILC09)
+@
+text
+@d2 1
+a2 1
+% $Id: snmp.tex,v 1.2 2008/12/07 02:33:43 binghe Exp binghe $
+d780 1
+a780 1
+\item Full SNMP protocol support (SNMPv1, SNMPv2c, SNMPv3)
+d783 1
+a783 1
+\item UDP retransmit support
+d857 1
+a857 1
+package dosn't use this method, instead, I use an ``auto retransmit''
+d1468 6
+a1473 6
+% LocalWords:  ABCDEFGHABCDEFGH has't regex multi runtime deftype defclass GCC
+% LocalWords:  defvar defparameter PARSERGEN readtable readtables refactoring
+% LocalWords:  CLOS VACM Nagios OpenView NNM Sep USOCKET GBBopen TCP IOlib io
+% LocalWords:  POSIX APIs ECL Huelsmann DATAGRAM dosn't RTT Dubuisson's TLV abc
+% LocalWords:  IPADDRESS TIMETICKS ldap pre EQL txt iso Froyd's IfTestEntry SQL
+% LocalWords:  synch TODO GBBopen's PortableThreads Corkill Froyd sigproc
+@
+
+
+1.2
+log
+@Print Version 1 on new ACM template
+@
+text
+@d2 1
+a2 1
+% $Id$
+d6 1
+a6 1
+%\documentclass[preprint,natbib]{sigplanconf}
+d17 2
+a18 2
+\titlebanner{DRAFT---Do not distribute}        % These are ignored unless
+\preprintfooter{Chun Tian (binghe)'s paper for ILC '09}   % 'preprint' option specified.
+d21 1
+a21 1
+\subtitle{An Introduction to the \textsc{cl-net-snmp} Project}
+d128 5
+a132 4
+Scieneer CL; running under Linux, Solaris, Mac OS X and Windows.  In
+following sections, I'll first introduce the SNMP package as a user,
+and then show the design idea and implementation details behind the
+express and convenient API.
+d299 1
+a299 1
+    . $\langle\mathrm{protocol}\rangle$)}. The
+d308 1
+a308 1
+    . $\langle\mathrm{protocol}\rangle$)}. The
+d638 3
+a640 2
+The framework of LISP-MIB\footnote{The actual ASN.1 definition can be
+  found in \textsc{cl-net-snmp}'s Subversion repository:
+d746 1
+a746 1
+definitions. After some investigation work, finally I choose
+d1256 1
+a1256 1
+\section{Future work}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 2
+a2 16
+%-----------------------------------------------------------------------------
+%
+%               Template for LaTeX Class/Style File
+%
+% Name:         sigplanconf-template.tex
+% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
+%               file for SIGPLAN conference proceedings.
+%
+% Author:       Paul C. Anagnostopoulos
+%               Windfall Software
+%               978 371-2316
+%               paul@@windfall.com
+%
+% Created:      15 February 2005
+%
+%-----------------------------------------------------------------------------
+d4 1
+d6 2
+a7 1
+\documentclass[preprint,natbib]{sigplanconf}
+d13 13
+a25 16
+\conferenceinfo{WXYZ '05}{date, City.} 
+\copyrightyear{2005} 
+\copyrightdata{[to be supplied]} 
+
+\titlebanner{banner above paper title}        % These are ignored unless
+\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+\title{Title Text}
+\subtitle{Subtitle Text, if any}
+
+\authorinfo{Name1}
+           {Affiliation1}
+           {Email1}
+\authorinfo{Name2\and Name3}
+           {Affiliation2/3}
+           {Email2/3}
+d30 22
+a51 1
+This is the text of the abstract.
+d54 9
+a62 1
+\category{CR-number}{subcategory}{third-level}
+d65 1
+a65 1
+term1, term2
+d68 1
+a68 1
+keyword1, keyword2
+d72 194
+a265 1
+The text of the paper begins here.
+d267 51
+a317 2
+\appendix
+\section{Appendix Title}
+d319 1049
+a1367 1
+This is the text of the appendix, if you need one.
+d1371 13
+a1383 1
+Acknowledgments, if needed.
+d1387 1
+a1387 1
+\begin{thebibliography}{}
+d1389 59
+a1447 2
+\bibitem{smith02}
+Smith, P. Q. reference text
+d1453 19
+@

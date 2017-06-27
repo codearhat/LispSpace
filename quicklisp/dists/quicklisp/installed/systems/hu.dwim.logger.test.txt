@@ -1,0 +1,1 @@
+dists/quicklisp/software/hu.dwim.logger-20151218-darcs/hu.dwim.logger.test.asd

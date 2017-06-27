@@ -1,0 +1,992 @@
+cl-uffi (2.1.2-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 20 Dec 2011 20:01:37 -0700
+
+cl-uffi (2.1.1-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 19 Dec 2011 10:35:50 -0700
+
+cl-uffi (2.1.0-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 19 Dec 2011 10:01:23 -0700
+
+cl-uffi (2.0.0-1) unstable; urgency=low
+
+  * Update upstream version for ASDF version dependency checking
+  * Switch to dpkg-source 3.0 (quilt) format
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 20 Apr 2010 12:11:34 -0600
+
+cl-uffi (1.8.6-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 11 Feb 2010 13:05:40 -0700
+
+cl-uffi (1.8.5-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 08 Feb 2010 16:06:57 -0700
+
+cl-uffi (1.8.4-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 08 Feb 2010 10:47:27 -0700
+
+cl-uffi (1.8.3-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 08 Feb 2010 08:28:15 -0700
+
+cl-uffi (1.8.2-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 07 Feb 2010 21:17:13 -0700
+
+cl-uffi (1.8.1-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 07 Feb 2010 02:34:52 -0700
+
+cl-uffi (1.8.0-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 06 Feb 2010 20:38:59 -0700
+
+cl-uffi (1.7.3-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 05 Feb 2010 19:32:55 -0700
+
+cl-uffi (1.7.2-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 05 Feb 2010 14:46:19 -0700
+
+cl-uffi (1.7.1-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 29 Jan 2010 14:22:26 -0700
+
+cl-uffi (1.7.0-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 28 Jan 2010 14:47:42 -0700
+
+cl-uffi (1.6.2-3) unstable; urgency=low
+
+  * Build with debhelper extension dh-lisp
+  * control: Add Vcs-Browser field. Fix Depends field.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 03 Aug 2009 19:09:46 -0600
+
+cl-uffi (1.6.2-2) unstable; urgency=low
+
+  * debian/control: Improve description
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 02 Aug 2009 06:21:27 -0600
+
+cl-uffi (1.6.2-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 02 Aug 2009 00:58:46 -0600
+
+cl-uffi (1.6.1-1) unstable; urgency=low
+
+  * New upstream
+  * debian/control: Require debhelper 7. Change to new lisp section.
+  Add Vcs-Git and Homepage fields.
+  * debian/rules: Update for DH7, architecture-independent build
+  * debian/{prerm,postrm}: Remove path from binary function
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 01 Aug 2009 20:38:03 -0600
+
+cl-uffi (1.6.0-1) unstable; urgency=low
+
+  * New upstream (closes: 433814) 
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 22 Jul 2007 12:39:49 -0600
+
+cl-uffi (1.5.18-3) unstable; urgency=low
+
+  * debian/watch: New version
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 18 Jul 2007 20:27:04 -0600
+
+cl-uffi (1.5.18-2) unstable; urgency=low
+
+  * Fix build twice in a row (closes: 424155)
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 22 May 2007 11:33:27 -0600
+
+cl-uffi (1.5.18-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 12 Apr 2007 23:48:46 -0600
+
+cl-uffi (1.5.17-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 10 Oct 2006 08:34:43 -0600
+
+cl-uffi (1.5.16-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 02 Sep 2006 20:31:11 -0600
+
+cl-uffi (1.5.15-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 14 Aug 2006 00:21:47 -0600
+
+cl-uffi (1.5.14-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue,  4 Jul 2006 19:23:10 -0600
+
+cl-uffi (1.5.13-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 17 May 2006 09:08:58 -0600
+
+cl-uffi (1.5.12-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 17 May 2006 08:09:13 -0600
+
+cl-uffi (1.5.11-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue,  9 May 2006 09:33:59 -0600
+
+cl-uffi (1.5.10-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 17 Apr 2006 18:05:56 -0600
+
+cl-uffi (1.5.9-1) unstable; urgency=low
+
+  * add GNU uname (closes: 355924)
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed,  8 Mar 2006 12:06:17 -0700
+
+cl-uffi (1.5.8-1) unstable; urgency=low
+
+  * Really commit patch for GNU/kFreeBSD (closes: 345220)
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 16 Jan 2006 14:47:08 -0700
+
+cl-uffi (1.5.7-2) unstable; urgency=low
+
+  * Commit patch for GNU/kFreeBSD (closes: 345220)
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 31 Dec 2005 11:11:36 -0700
+
+cl-uffi (1.5.7-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 14 Nov 2005 19:39:25 -0700
+
+cl-uffi (1.5.6-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 14 Nov 2005 12:02:07 -0700
+
+cl-uffi (1.5.5-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri,  4 Nov 2005 11:59:50 -0700
+
+cl-uffi (1.5.4-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 18 Sep 2005 01:22:50 -0600
+
+cl-uffi (1.5.3-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 17 Sep 2005 23:44:20 -0600
+
+cl-uffi (1.5.2-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 17 Sep 2005 22:48:11 -0600
+
+cl-uffi (1.5.1-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed,  6 Jul 2005 21:29:46 -0600
+
+cl-uffi (1.5.0-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue,  5 Jul 2005 19:03:23 -0600
+
+cl-uffi (1.4.39-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed,  8 Jun 2005 18:37:06 -0600
+
+cl-uffi (1.4.38-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 08 Jun 2005 10:42:10 -0600
+
+cl-uffi (1.4.37-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 13 Apr 2005 12:42:41 -0600
+
+cl-uffi (1.4.36-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed,  6 Apr 2005 11:42:09 -0600
+
+cl-uffi (1.4.35-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon,  4 Apr 2005 14:35:10 -0600
+
+cl-uffi (1.4.34-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun,  3 Apr 2005 17:55:49 -0600
+
+cl-uffi (1.4.33-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed,  2 Mar 2005 12:25:43 -0700
+
+cl-uffi (1.4.32-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 22 Feb 2005 10:10:03 -0700
+
+cl-uffi (1.4.31-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 22 Jan 2005 17:27:37 -0700
+
+cl-uffi (1.4.30-1) unstable; urgency=low
+
+  * New upstream, handle sb-unicode
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon,  8 Nov 2004 19:30:11 -0700
+
+cl-uffi (1.4.29-1) unstable; urgency=low
+
+  * New upstream, revert patch that broken clsql on debian
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 30 Oct 2004 11:30:14 -0600
+
+cl-uffi (1.4.28-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 23 Oct 2004 09:05:50 -0600
+
+cl-uffi (1.4.27-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 21 Oct 2004 16:44:11 -0600
+
+cl-uffi (1.4.26-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu,  9 Sep 2004 22:20:47 -0600
+
+cl-uffi (1.4.25-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 27 Aug 2004 06:33:16 -0600
+
+cl-uffi (1.4.24-1) unstable; urgency=low
+
+  * Fix for OpenMCL from James Bielman
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 15 Jul 2004 09:27:22 -0600
+
+cl-uffi (1.4.23-1) unstable; urgency=low
+
+  * Add support for new SBCL load-shared-object [supplied by Andreas Fuchs]
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 13 Jul 2004 09:19:32 -0600
+
+cl-uffi (1.4.22-1) unstable; urgency=low
+
+  * OpenMCL fix
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 23 Jun 2004 12:36:24 -0600
+
+cl-uffi (1.4.21-1) unstable; urgency=low
+
+  * Fix for WITH-FOREIGN-OBJECT macro on CMUCL
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 10 Jun 2004 00:17:31 -0600
+
+cl-uffi (1.4.20-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 20 May 2004 09:59:07 -0600
+
+cl-uffi (1.4.19-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 19 May 2004 12:16:03 -0600
+
+cl-uffi (1.4.18-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 18 May 2004 15:40:58 -0600
+
+cl-uffi (1.4.17-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 15 May 2004 11:02:22 -0600
+
+cl-uffi (1.4.16-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 13 May 2004 04:23:13 -0600
+
+cl-uffi (1.4.15-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 12 May 2004 22:40:39 -0600
+
+cl-uffi (1.4.14-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 12 May 2004 12:48:13 -0600
+
+cl-uffi (1.4.13-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu,  6 May 2004 10:14:10 -0600
+
+cl-uffi (1.4.12-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 17 Apr 2004 12:26:00 -0600
+
+cl-uffi (1.4.11-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 15 Apr 2004 05:48:48 -0600
+
+cl-uffi (1.4.10-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 15 Apr 2004 01:59:37 -0600
+
+cl-uffi (1.4.9-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 13 Apr 2004 16:03:22 -0600
+
+cl-uffi (1.4.8-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 13 Apr 2004 14:13:04 -0600
+
+cl-uffi (1.4.7-1) unstable; urgency=low
+
+  * Fix fast-native-to-string on 16-bit wide char Allegro
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri,  2 Apr 2004 14:20:36 -0700
+
+cl-uffi (1.4.6-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 25 Nov 2003 06:37:14 -0700
+
+cl-uffi (1.4.5-1) unstable; urgency=low
+
+  * Change documentation encoding to ISO-8859-1
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 20 Nov 2003 20:35:15 -0700
+
+cl-uffi (1.4.4-1) unstable; urgency=low
+
+  * Add patch from Vebjorn Ljosa for fast-native-to-string
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 18 Nov 2003 13:09:32 -0700
+
+cl-uffi (1.4.3-1) unstable; urgency=low
+
+  * Improved test/make.sh and uffi-tests.asd
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 11 Nov 2003 15:02:40 -0700
+
+cl-uffi (1.4.2-1) unstable; urgency=low
+
+  * Yet another attempt for asdf-install
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 11 Nov 2003 04:51:24 -0700
+
+cl-uffi (1.4.1-1) unstable; urgency=low
+
+  * Fix for asdf-install
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 11 Nov 2003 04:29:27 -0700
+
+cl-uffi (1.4.0-1) unstable; urgency=low
+
+  * Make UFFI asdf-installable
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 11 Nov 2003 03:28:06 -0700
+
+cl-uffi (1.3.9-1) unstable; urgency=low
+
+  * Use local XSL files, add Debian-specific catalog
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 11 Nov 2003 00:12:34 -0700
+
+cl-uffi (1.3.8-1) unstable; urgency=low
+
+  * Use XInclude for documentation
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 10 Nov 2003 22:39:33 -0700
+
+cl-uffi (1.3.7-1) unstable; urgency=low
+
+  * Convert documentation to Docbook XML with new processing commands
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 10 Nov 2003 20:38:28 -0700
+
+cl-uffi (1.3.6-1) unstable; urgency=low
+
+  * More MacOSX changes
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 31 Aug 2003 20:45:23 -0600
+
+cl-uffi (1.3.5-1) unstable; urgency=low
+
+  * Rework loading of foreign libraries to better support MacOSX, especially
+  sbcl
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 27 Aug 2003 10:01:11 -0600
+
+cl-uffi (1.3.4-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 26 Aug 2003 07:29:19 -0600
+
+cl-uffi (1.3.3-1) unstable; urgency=low
+
+  * Add gettimeofday to tests
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 26 Aug 2003 07:29:07 -0600
+
+cl-uffi (1.3.2-1) unstable; urgency=low
+
+  * Patch from Edi Weitz
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 22 Aug 2003 19:03:06 -0600
+
+cl-uffi (1.3.1-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 14 Aug 2003 18:27:32 -0600
+
+cl-uffi (1.3.0-1) unstable; urgency=low
+
+  * Add initial support and tests for def-foreign-var
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 14 Aug 2003 15:38:33 -0600
+
+cl-uffi (1.2.23-1) unstable; urgency=low
+
+  * New upstream with fixes suggested and patches submitted by Edi Weitz.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 14 Aug 2003 12:26:07 -0600
+
+cl-uffi (1.2.22-1) unstable; urgency=low
+
+  * New upstream with Lispworks patch from Edi Weitz
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 12 Aug 2003 08:09:04 -0600
+
+cl-uffi (1.2.21-1) unstable; urgency=low
+
+  * New upstream -- fix for Franz's mlisp
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 19 Jul 2003 14:15:52 -0600
+
+cl-uffi (1.2.20-1) unstable; urgency=low
+
+  * New upstream -- really fix bug
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue,  8 Jul 2003 06:37:58 -0600
+
+cl-uffi (1.2.19-1) unstable; urgency=low
+
+  * Fix bug in sbcl/load-library
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon,  7 Jul 2003 18:49:37 -0600
+
+cl-uffi (1.2.18-1) unstable; urgency=low
+
+  * New BSD license
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 26 Jun 2003 12:01:24 -0600
+
+cl-uffi (1.2.17-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 12 Jun 2003 06:12:30 -0600
+
+cl-uffi (1.2.16-1) unstable; urgency=low
+
+  * New upstream
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 12 Jun 2003 06:04:06 -0600
+
+cl-uffi (1.2.15-1) unstable; urgency=low
+
+  * Documentation improvement by Nikodemus Siivola
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon,  5 May 2003 15:57:32 -0600
+
+cl-uffi (1.2.14-1) unstable; urgency=low
+
+  * New upstream
+  * Add to debhelper to depends (closes:192001)
+  
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon,  5 May 2003 08:53:30 -0600
+
+cl-uffi (1.2.13-1) unstable; urgency=low
+
+  * Fix getenv test
+  * Work-around load-object-file bug in CMUCL in testing script
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu,  1 May 2003 17:31:21 -0600
+
+cl-uffi (1.2.12-1) unstable; urgency=low
+
+  * Finish converting examples into test suite
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 30 Apr 2003 08:11:42 -0600
+
+cl-uffi (1.2.11-1) unstable; urgency=low
+
+  * Add test suite, new binary package uffi-tests
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 29 Apr 2003 08:10:26 -0600
+
+cl-uffi (1.2.10-1) unstable; urgency=low
+
+  * Fix allegro free-cstring bug
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 28 Mar 2003 12:58:08 -0700
+
+cl-uffi (1.2.9-1) unstable; urgency=low
+
+  * change ccl:%put-cstring to ccl::%put-cstring for openmcl
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 12 Mar 2003 14:12:03 -0700
+
+cl-uffi (1.2.8-1) unstable; urgency=low
+
+  * Change output on compress.lisp example
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 10 Mar 2003 10:37:00 -0700
+
+cl-uffi (1.2.7-1) unstable; urgency=low
+
+  * Remove reference to obsolete Corman module in uffi.asd
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 19 Feb 2003 14:56:15 -0700
+
+cl-uffi (1.2.6-1) unstable; urgency=low
+
+  * Add :language :ansi-c for Lispworks def-function
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed,  5 Feb 2003 23:54:12 -0700
+
+cl-uffi (1.2.5-1) unstable; urgency=low
+
+  * Rework allocate-foreign-array to evaluate type
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 28 Dec 2002 01:12:30 -0700
+
+cl-uffi (1.2.4-1) unstable; urgency=low
+
+  * Fix syntax error from last version
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 13 Dec 2002 18:54:41 -0700
+
+cl-uffi (1.2.3-1) unstable; urgency=low
+
+  * More external format changes for lispworks (thanks Marc Battyani)
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 13 Dec 2002 15:46:23 -0700
+
+cl-uffi (1.2.2-1) unstable; urgency=low
+
+  * Add external format parameters to lispworks to avoid translating stringsl
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 13 Dec 2002 14:26:17 -0700
+
+cl-uffi (1.2.1-1) unstable; urgency=low
+
+  * Add uncompression test
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon,  9 Dec 2002 09:05:52 -0700
+
+cl-uffi (1.2.0-1) unstable; urgency=low
+
+  * Fixes in allocate-foreign-object and deref-array for allegro
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon,  2 Dec 2002 23:59:43 -0700
+
+cl-uffi (1.1.8-1) unstable; urgency=low
+
+  * Reverse broken bug "fixes" 
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 28 Nov 2002 11:47:26 -0700
+
+cl-uffi (1.1.7.1-1) unstable; urgency=low
+
+  * Another allegro bug (Thanks Matthew Danish)
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 23 Nov 2002 12:06:40 -0700
+
+cl-uffi (1.1.7-1) unstable; urgency=low
+
+  * bug fixes on allegro
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 23 Nov 2002 11:03:18 -0700
+
+cl-uffi (1.1.6-1) unstable; urgency=low
+
+  * More documention of cstrings and foreign strings
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 21 Nov 2002 19:51:55 -0700
+
+cl-uffi (1.1.5-1) unstable; urgency=low
+
+  * Documentation changes
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 21 Nov 2002 18:35:26 -0700
+
+cl-uffi (1.1.4-1) unstable; urgency=low
+
+  * OpenMCL/MCL fixes
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 20 Nov 2002 14:03:16 -0700
+
+cl-uffi (1.1.3-1) unstable; urgency=low
+
+  * Fix OpenMCL default library pathname type
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 17 Nov 2002 22:28:59 -0700
+
+cl-uffi (1.1.2-1) unstable; urgency=low
+
+  * src/objects.lisp: Fix bug in allocate-foreign-object for AllegroCL
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 14 Nov 2002 15:10:41 -0700
+
+cl-uffi (1.1.1-1) unstable; urgency=low
+
+  * Remove 'load-compiled-op from .asd file
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri,  8 Nov 2002 09:49:49 -0700
+
+cl-uffi (1.1.0-1) unstable; urgency=low
+
+  * Add SCL support.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 15 Oct 2002 11:22:35 -0600
+
+cl-uffi (1.0.1-1) unstable; urgency=low
+
+  * Add SBCL to documentation
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 14 Oct 2002 01:18:05 -0600
+
+cl-uffi (1.0.0-1) unstable; urgency=low
+
+  * Initial SBCL compatibility
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 13 Oct 2002 19:01:31 -0600
+
+cl-uffi (0.9.2-1) unstable; urgency=high
+
+  * Add AUTHORS file
+  * Integrate Reini Urban's cormanlisp patches into main source
+  * Add Depends: version on Common Lisp Controller
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue,  1 Oct 2002 08:11:21 -0600
+
+cl-uffi (0.9.1-1) unstable; urgency=low
+
+  * Rename .cl files to .lisp files
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 30 Sep 2002 04:01:58 -0600
+
+cl-uffi (0.9.0-1) unstable; urgency=low
+
+  * Reorganize directories, merge MCL/OpenMCL into main code 
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 30 Sep 2002 01:32:03 -0600
+
+cl-uffi (0.8.6-1) unstable; urgency=low
+
+  * Fix :pointer-self for OpenMCL.
+  * Multiple changes to support OpenMCL with CLSQL
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 30 Sep 2002 01:31:37 -0600
+
+cl-uffi (0.8.5-1) unstable; urgency=low
+
+  * Add with-cstrings macro to mcl's source
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 29 Sep 2002 12:19:20 -0600
+
+cl-uffi (0.8.4-1) unstable; urgency=low
+
+  * Change mcl's load-library definition from macro to function
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 29 Sep 2002 11:49:32 -0600
+
+cl-uffi (0.8.3-1) unstable; urgency=low
+
+  * New upstream release. Passes all tests with OpenMCL in Debian PPC.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 29 Sep 2002 11:32:05 -0600
+
+cl-uffi (0.8.2-2) unstable; urgency=low
+
+  * Add pathname to clc-register-impl invocation
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 25 Sep 2002 06:38:44 -0600
+
+cl-uffi (0.8.2-1) unstable; urgency=low
+
+  * Add conditionals to .asd file to control clc autobuilding
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 22 Sep 2002 21:00:57 -0600
+
+cl-uffi (0.8.1-1) unstable; urgency=low
+
+  * Fix size of openmcl's and mcl's integers
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 20 Sep 2002 07:06:31 -0600
+
+cl-uffi (0.8.0-1) unstable; urgency=low
+
+  * Adds support for openmcl, numerous changes from John Desoi
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 19 Sep 2002 21:09:17 -0600
+
+cl-uffi (0.7.1-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 18 Sep 2002 01:57:10 -0600
+
+cl-uffi (0.7.0-1) unstable; urgency=low
+
+  * Remove .system file, restructure directories for .asd file without pathnames
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 16 Sep 2002 12:00:45 -0600
+
+cl-uffi (0.6.3-1) unstable; urgency=low
+
+  * New upstream version, fixes problem with .asd file.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri,  6 Sep 2002 04:59:45 -0600
+
+cl-uffi (0.6.2-1) unstable; urgency=low
+
+  * New upstream version. Restructure directories once again to handle 
+    non-CLC systems.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 23 Aug 2002 09:33:14 -0600
+
+cl-uffi (0.6.1-1) unstable; urgency=low
+
+  * Add uffi.asd file to upstream for ASDF users.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat, 17 Aug 2002 18:50:12 -0600
+
+cl-uffi (0.6.0-2) unstable; urgency=low
+
+  * Update e-mail address
+  * Update Standards version
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Mon, 12 Aug 2002 00:01:27 -0600
+
+cl-uffi (0.6.0-1) unstable; urgency=low
+
+  * New upstream version (Restructure directories to improve Common Lisp
+    Controller compatibility.)
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 25 Jul 2002 21:24:53 -0600
+
+cl-uffi (0.5.1-1) unstable; urgency=low
+
+  * Rework upstream documentation.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue,  9 Jul 2002 12:45:56 -0600
+
+cl-uffi (0.5.0-2) unstable; urgency=low
+
+  * Add the LLGPL text to the copyright file.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun,  7 Jul 2002 15:40:05 -0600
+
+cl-uffi (0.5.0-1) unstable; urgency=low
+
+  * New upstream version
+  
+  * Additions to the copyright file to comply with Debian Policy
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri, 28 Jun 2002 11:16:28 -0600
+
+cl-uffi (0.4.8-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Wed, 26 Jun 2002 21:35:07 -0600
+
+cl-uffi (0.4.5-2) unstable; urgency=low
+
+  * Fix Build-Depends-Indep
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 25 Jun 2002 06:12:19 -0600
+
+cl-uffi (0.4.5-1) unstable; urgency=low
+
+  * New upstream version.
+
+  * Remove deprecated repository 
+  
+  * Migrate to Debhelper V4
+  
+  * Changed Maintainer: field from sponsor to sponsoree/packager
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 20 Jun 2002 07:43:53 -0600
+
+cl-uffi (0.4.4-8) unstable; urgency=low
+
+  * Improved control file in anticipation of having dpkg-buildpackage
+    generate the documentation rather than putting the documentation in
+    the upstream archive.
+  * Remade package to include upstream sources.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun,  5 May 2002 11:17:52 -0600
+
+cl-uffi (0.4.4-7) unstable; urgency=low
+
+  * Modified make-dist.sh to use cvs-buildpackage, added options
+  * Cleaned debian/rules, debian/copyright	
+  * First version to upload. (closes: #145723)
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sat,  4 May 2002 16:03:11 -0600
+
+cl-uffi (0.4.4-6) unstable; urgency=low
+
+  * Fixed Maintainer and Uploader fields in debian control
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Fri,  3 May 2002 09:11:47 -0600
+
+cl-uffi (0.4.4-5) unstable; urgency=low
+
+  * Commented-out DH_VERBOSE flag. 
+  * Uses debian/dirs with debhelper.
+  * Changed doc-base section to programming. 
+  * Added Uploaders field to debian/control. 
+  * Made .system file be a symbolic link to .system file in repository.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu,  2 May 2002 15:37:50 -0600
+
+cl-uffi (0.4.4-4) unstable; urgency=low
+
+  * Added upstream ChangeLog to debian distribution.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Tue, 30 Apr 2002 13:01:12 -0600
+
+cl-uffi (0.4.4-3) unstable; urgency=low
+
+  * Modified make-dist.sh to create better .diff.gz
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 28 Apr 2002 06:38:48 -0600
+
+cl-uffi (0.4.4-2) unstable; urgency=low
+
+  * Improved source code archive for debian upload.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Sun, 28 Apr 2002 03:04:52 -0600
+
+cl-uffi (0.4.4-1) unstable; urgency=low
+
+  * Initial package.
+
+ -- Kevin M. Rosenberg <kmr@debian.org>  Thu, 25 Apr 2002 19:13:41 -0600
+

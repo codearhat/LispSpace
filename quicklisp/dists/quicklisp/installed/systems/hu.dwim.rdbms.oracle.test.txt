@@ -1,0 +1,1 @@
+dists/quicklisp/software/hu.dwim.rdbms-20170516-darcs/hu.dwim.rdbms.oracle.test.asd

@@ -1,0 +1,27 @@
+Source: cl-uffi
+Section: lisp
+Priority: optional
+Maintainer: Kevin M. Rosenberg <kmr@debian.org>
+Build-Depends: dh-lisp, zlib1g-dev,debhelper (>= 7.0.0)
+Standards-Version: 3.9.2.0
+Homepage: http://uffi.kpe.io/
+Vcs-Git: git://git.kpe.io/uffi.git
+
+Package: cl-uffi
+Architecture: all
+Depends: ${misc:Depends}
+Recommends: cl-uffi-tests
+Description: Universal Foreign Function Library for Common Lisp
+ UFFI provides a universal foreign function interface (FFI) for 
+ Common Lisp.
+ UFFI supports AllegroCL, CMUCL, Lispworks, MCL, OpenMCL,
+ SBCL, and SCL.
+
+Package: cl-uffi-tests
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, cl-uffi, zlib1g-dev
+Description: Regression tests for UFFI Common Lisp Library
+ This is a test of regression tests for Debian cl-uffi package.
+ UFFI is a universal foreign function interface for Common Lisp
+ implementations. Besides providing testing for UFFI, the tests 
+ serve as an example of UFFI usage.
