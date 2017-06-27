@@ -15,3 +15,6 @@
 *.sx32fsl
 *.wx64fsl
 *.wx32fsl
+.slime/
+.slime-history.eld
+.emacs.d/.cache/*

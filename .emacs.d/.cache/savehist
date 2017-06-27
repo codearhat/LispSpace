@@ -9,5 +9,5 @@
 (setq evil-jumps-history '((50 "d:/dev/e.lisp") (46 "d:/dev/e.lisp") (1 "d:/dev/e.lisp") (16985 "d:/app/wzLispSpace/.spacemacs") (1 "d:/dev/e.lisp") (16985 "d:/app/wzLispSpace/.spacemacs") (16900 "d:/app/wzLispSpace/.spacemacs") (16900 "d:/app/wzLispSpace/.spacemacs") (1 "d:/app/wzLispSpace/.spacemacs") (16900 "d:/app/wzLispSpace/.spacemacs") (16953 "d:/app/wzLispSpace/.spacemacs") (1 "d:/app/wzLispSpace/.spacemacs")))
 (setq mark-ring 'nil)
 (setq search-ring 'nil)
-(setq regexp-search-ring '("\"" "machine" "sbcl" "font" "maximize" "user-config" "user-init" "https" "layers" "font" "https"))
+(setq regexp-search-ring '("coll" "optimiz" "coll" "ackermann" "\"" "machine" "sbcl" "font" "maximize" "user-config" "user-init" "https" "layers" "font" "https"))
 (setq extended-command-history '(#("eval-region" 0 11 (match-part "eval-region")) "slime"))
