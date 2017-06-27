@@ -2,10 +2,12 @@
 基于Spacemacs和SLIME，运行在Windows上的64位Common Lisp开发环境。
 
 ## 说明
-初学Common Lisp（以下简称CL）时对CL+EMACS+SLIME的配置很头痛，尝试多次才成功。为免重复劳动，现把配置好的开发环境作为一个套件保存下来，称之为wzLispBase。
-2017年6月学会了用Windows版（之前只会用cygwin版）Emacs配置Spacemacs，因此套件改名为wzLispSpace。
+我初学Common Lisp（以下简称CL）时对CL+EMACS+SLIME的配置很头痛，尝试多次才成功。为免重复劳动，就把配置好的开发环境打包作为套件，称为LispBase。
+
+2017年6月学会了用Windows版（之前只会用cygwin版）Emacs配置Spacemacs，因此套件改名为LispSpace。
 目标操作系统是64位的Win7/8.1/10。
-欢迎同好使用。如有软件缺陷、版权问题、改进建议，请与我联系：wz@zlisp.com
+
+欢迎同好使用。如有软件缺陷、版权问题、改进建议，请与我联系：codearhat@gmail.com
 
 ## 软件版本
 * emacs-25.2.1
