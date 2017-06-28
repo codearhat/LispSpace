@@ -1,0 +1,14 @@
+;
+; Known issues based on testing with SBCL v1.2.5.68-ea26488 (default features), PLplot 5.10.0.
+;
+; Hazen 12/14
+;
+
+
+1) "xwin" driver - If you click on the X to close the window your Lisp process will probably
+     crash. The xwin driver is supposed to catch this X windows signal, but this does not seem
+     to happen with Lisp (or at least SBCL anyway). This is not an issue for standalone C
+     programs.
+
+   Workaround - Click on the window and hit the return key.
+

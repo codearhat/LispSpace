@@ -1,0 +1,11 @@
+open tasks:
+
+- (more than one gnuplot instance) it would be good to apply commands
+  to the other plot-figure if the user focuses to another plot window
+
+- implement other API commands
+
+- avoid the (ltk-) warnings when loading the lib; should I implement
+  do-execute by myself?
+
+- meaningfull error message when running make-doc without cl-api

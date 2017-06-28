@@ -22,6 +22,9 @@
 * ccl-1.11
   在Windows平台比较稳定，支持多种平台。
   http://ccl.clozure.com/
+* abcl-1.5
+  基于JVM的CL实现，启动较慢，运行速度还可以。
+  https://common-lisp.net/project/armedbear/
 * quicklisp
   CL事实上的包管理器。
   http://www.quicklisp.org/
@@ -33,6 +36,8 @@
   https://dev.mysql.com/downloads/connector/c/
 * nginx-1.13.1
   https://nginx.org/
+* gnuplot-5.0.6
+  http://gnuplot.sourceforge.net/
 
 ## 预装包（System）
 我想用CL开发实际项目，因此预装了网络、数据库、加密、WEB、图形等软件包。
@@ -52,6 +57,7 @@
 * snmp
 * telnetlib
 * usocket
+* vgplot（调用gnuplot绘图）
 
 ## .spacemacs设定
 * 改用http下载ELPA(Emacs Lisp Package Archive)：`dotspacemacs-elpa-https nil`
@@ -81,41 +87,3 @@ doc目录有些公开的CL资料。以下是些CL资料网站：
 * Let Over Lambda - 50 Years of Lisp
 * Paradigms of Artificial Intelligence Programming: Case Studies in Common Lisp
 * Land of Lisp
-
-## LISP版本样例
-* SBCL
-```
-LISP-TYPE           : SBCL
-LISP-VERSION        : 1.3.18
-MACHINE-TYPE        : X86-64
-MACHINE-VERSION     : NIL
-SOFTWARE-TYPE       : Win32
-SOFTWARE-VERSION    : 6.3.9600
-```
-
-* CCL
-```
-LISP-TYPE           : Clozure Common Lisp
-LISP-VERSION        : Version 1.11-r16635  (WindowsX8664)
-MACHINE-TYPE        : x64
-MACHINE-VERSION     : Intel64 Family 6 Model 58 Stepping 9, GenuineIntel
-SOFTWARE-TYPE       : Microsoft Windows
-SOFTWARE-VERSION    : 6.2 Build 9200 (Workstation)
-```
-
-* ABCL
-```
-LISP-TYPE           : Armed Bear Common Lisp
-LISP-VERSION        : 1.5.0
-MACHINE-TYPE        : X86-64
-MACHINE-VERSION     : NIL
-SOFTWARE-TYPE       : Windows 8.1
-SOFTWARE-VERSION    : 6.3
-```
-
-## 历史
-* 2015-01-20 创建，支持SBCL、CCL。
-* 2017-05-02 说明文件转为MarkDown格式。
-* 2017-06-24 改用Spacemacs配置。
-* 2017-06-26 改用64位软件。添加SSL、MySQL、SQLITE相关DLL。
-* 2017-06-27 添加ABCL。

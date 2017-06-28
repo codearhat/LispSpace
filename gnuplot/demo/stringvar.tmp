@@ -1,0 +1,11 @@
+Exercise word and words functions
+
+foo = word and words can handle 'quoted string'
+words(foo) = 6
+word(foo, 6) = quoted string
+
+foo = "double quotes" or 'single quotes'
+words(foo) = 3
+
+foo = Apostrophes inside words don't matter
+word(foo, 4) = don't
