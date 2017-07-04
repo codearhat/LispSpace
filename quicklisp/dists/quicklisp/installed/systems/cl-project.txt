@@ -1,0 +1,1 @@
+dists/quicklisp/software/cl-project-20160531-git/cl-project.asd
