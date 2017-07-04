@@ -1,1 +1,0 @@
-dists/quicklisp/software/hu.dwim.defclass-star-20150709-darcs/hu.dwim.defclass-star.documentation.asd

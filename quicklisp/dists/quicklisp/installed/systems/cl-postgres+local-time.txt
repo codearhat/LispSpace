@@ -1,1 +1,0 @@
-dists/quicklisp/software/local-time-20170516-git/cl-postgres+local-time.asd

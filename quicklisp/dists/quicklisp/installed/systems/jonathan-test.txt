@@ -1,1 +1,0 @@
-dists/quicklisp/software/jonathan-20170516-git/jonathan-test.asd

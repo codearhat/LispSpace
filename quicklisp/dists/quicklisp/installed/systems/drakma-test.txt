@@ -1,1 +1,0 @@
-dists/quicklisp/software/drakma-2.0.2/drakma-test.asd

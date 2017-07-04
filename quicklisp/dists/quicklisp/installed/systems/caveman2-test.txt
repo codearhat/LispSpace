@@ -1,1 +1,1 @@
-dists/quicklisp/software/caveman-20161031-git/caveman2-test.asd
+dists/quicklisp/software/caveman-20170630-git/caveman2-test.asd

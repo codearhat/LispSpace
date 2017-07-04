@@ -1,1 +1,0 @@
-dists/quicklisp/software/cl-jpeg-20170516-git/cl-jpeg.asd
